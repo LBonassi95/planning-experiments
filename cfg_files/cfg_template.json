@@ -1,0 +1,11 @@
+{
+  "NAME": "a meaningful name for the experiment",
+  "PATH_TO_DOMAINS" : "path to the folder with the domains",
+  "PATH_TO_RESULTS" : "path to the folder with the domains",
+  "PLANNERS_X_DOMAINS" : {
+    "planner1": {"COMPILER": "None", "DOMAINS": ["domain1", "domain2"]},
+    "planner2": {"COMPILER": "None", "DOMAINS": ["domain1", "domain2"]}
+  },
+  "MEMORY": 8000000,
+  "TIME": 1800
+}
