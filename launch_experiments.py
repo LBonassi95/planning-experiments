@@ -6,7 +6,8 @@ import random
 import datetime
 
 from constants import NAME, RUNS, PLANNERS_X_DOMAINS, PATH_TO_DOMAINS, DOMAINS, DOMAIN_INSTANCES_ERROR, PATH_TO_RESULTS, \
-    TIME, MEMORY, COMPILER, SHELL_TEMPLATE, RM_CMD, CONFIGS, PLANNER_EXE_INSTANCE, PLANNER_EXE_SOLUTION, PLANNER_EXE_DOMAIN
+    TIME, MEMORY, COMPILER, SHELL_TEMPLATE, RM_CMD, CONFIGS, PLANNER_EXE_INSTANCE, PLANNER_EXE_SOLUTION, PLANNER_EXE_DOMAIN, \
+    PLANNER_COPIES_FOLDER, PLANNER_DESTINATION, PLANNER_SOURCE, PPN, PRIORITY
 
 CFG_PLANNER_ERROR1 = 'ERROR! configurations file for {} not found'
 CFG_PLANNER_ERROR2 = 'ERROR! configuration {} for {} not found'
@@ -76,6 +77,17 @@ def create_results_folder(name, exp_id, planner, config, domain):
     return results_folder_planner_domain
 
 
+def manage_planner_copy(planner, config, script_str):
+    pass # !!!!!!
+    tmp_dir = path.join('planners', planner, PLANNER_COPIES_FOLDER)
+    if not path.isdir(tmp_dir):
+        os.mkdir(tmp_dir)
+    copy_planner_dst = path.join(tmp_dir, '{}_{}'.format(planner, config))
+    planner_source = path.join('planners', planner, 'PLANNER_SOURCE')
+    script_str = script_str.replace(PLANNER_DESTINATION, path.abspath(copy_planner_dst))
+    script_str = script_str.replace(PLANNER_SOURCE, path.abspath(planner_source))
+    print(script_str)
+
 def create_scripts(name, exp_id, run_dict, memory, time):
     old_scripts_cleanup(name)
 
@@ -93,14 +105,15 @@ def create_scripts(name, exp_id, run_dict, memory, time):
                     script_str = SHELL_TEMPLATE
                     if config not in cfg_map:
                         raise Exception(CFG_PLANNER_ERROR2.format(config, planner))
+
                     command_template = cfg_map[config]
+
+                    manage_planner_copy(planner, config, script_str)
 
                     solution_name = '{}_{}.sol'.format(domain, pddl_instance.replace('.pddl', ''))
                     planner_exe = command_template.replace(PLANNER_EXE_DOMAIN, pddl_domain)\
                         .replace(PLANNER_EXE_INSTANCE, pddl_instance)\
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
-
-
 
                     script_str = script_str.format(memory=memory)
                     print(script_name)
