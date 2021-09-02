@@ -16,6 +16,8 @@ DOMAIN_STR_CONST = "domain"
 # Errors #####
 DOMAIN_INSTANCES_ERROR = "ERROR! domain files and problem files don't match in number"
 ALREADY_REGISTERED = "WARNING! planner {planner_name} already registered, skipped!"
+PLANNER_NOT_FOUND = "WARNING! planner {planner_name} not found, skipped!"
+PLANNER_REGISTERED = "Success! planner {planner_name} registered"
 CFG_PLANNER_ERROR1 = 'ERROR! configurations file for {} not found'
 CFG_PLANNER_ERROR2 = 'ERROR! configuration {} for {} not found'
 ##############
