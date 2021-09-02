@@ -1,3 +1,0 @@
-{
-  "BASE": "python3 plan.py #DOMAIN# #INSTANCE# #SOLUTION#"
-}

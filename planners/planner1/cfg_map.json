@@ -1,4 +1,0 @@
-{
-  "BASE": "launch.sh #DOMAIN# #INSTANCE# #SOLUTION#",
-  "PLUS": "launch.sh #DOMAIN# #INSTANCE# #SOLUTION# --opt"
-}
