@@ -91,7 +91,7 @@ def write_script(shell_script, script_name, script_dst):
         output_writer.write(shell_script)
 
 
-def create_scripts(name, exp_id, run_dict, memory, time):
+def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
     script_list = []
     script_folder = scripts_setup(name)
 
@@ -113,10 +113,16 @@ def create_scripts(name, exp_id, run_dict, memory, time):
                     if config not in cfg_map:
                         raise Exception(CFG_PLANNER_ERROR2.format(config, planner))
 
+                    path_to_pddl_domain = path.join(path_to_domains, pddl_domain)
+                    path_to_pddl_instance = path.join(path_to_domains, pddl_instance)
+
                     command_template = cfg_map[config]
-                    planner_exe = command_template.replace(PLANNER_EXE_DOMAIN, pddl_domain) \
-                        .replace(PLANNER_EXE_INSTANCE, pddl_instance) \
+                    planner_exe = command_template.replace(PLANNER_EXE_DOMAIN, path_to_pddl_domain) \
+                        .replace(PLANNER_EXE_INSTANCE, path_to_pddl_instance) \
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
+
+                    # RIPRENDERE DA QUI !!! (mettere stdo e stde al run del planner)
+                    planner_exe += " d"
 
                     shell_script = manage_planner_copy(name, planner, config, domain, instance_name, exp_id, shell_script)
                     shell_script = shell_script.replace(MEMORY_SHELL, str(memory))
@@ -170,7 +176,7 @@ def main(args):
 
     collect_runs(run_dict, path_to_domains)
 
-    script_list = create_scripts(name, exp_id, run_dict, memory, time)
+    script_list = create_scripts(name, exp_id, run_dict, memory, time, path_to_domains)
 
     execute_scripts(name, script_list, cfg_dict[PPN], cfg_dict[PRIORITY])
 

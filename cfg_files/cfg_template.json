@@ -5,7 +5,7 @@
     "planner1": {
       "COMPILER": "None",
       "DOMAINS": ["domain1", "domain2"],
-      "CONFIGS": ["BASE", "PLUS"]
+      "CONFIGS": ["BASE"]
     },
     "planner2": {
       "COMPILER": "None",
