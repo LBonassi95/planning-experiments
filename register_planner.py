@@ -9,7 +9,6 @@ def main(args):
         for planner_path_raw in planners_to_register:
             planner_path = planner_path_raw
             planner_name = os.path.basename(planner_path)
-            print(os.path.isdir(planner_path))
             if not os.path.isdir(planner_path):
                 print(PLANNER_NOT_FOUND.format(planner_name=planner_name))
             else:
