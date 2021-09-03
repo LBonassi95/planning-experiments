@@ -121,9 +121,8 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                         .replace(PLANNER_EXE_INSTANCE, path_to_pddl_instance) \
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
 
-                    # RIPRENDERE DA QUI !!! (mettere stdo e stde al run del planner)
-                    stde = 'err_{}_{}_{}'.format(path.join(solution_folder), domain, instance_name)
-                    stdo = 'out_{}_{}_{}'.format(path.join(solution_folder), domain, instance_name)
+                    stde = '{}_err'.format(path.join(solution_folder, '{}_{}'.format(domain, instance_name)))
+                    stdo = '{}_out'.format(path.join(solution_folder, '{}_{}'.format(domain, instance_name)))
                     planner_exe += " 2>>{} 1>>{}".format(stde, stdo)
 
                     shell_script = manage_planner_copy(name, planner, config, domain, instance_name, exp_id, shell_script)
@@ -154,8 +153,8 @@ def execute_scripts(name, script_list, ppn, priority):
 
     for (script_name, script) in script_list:
         qsub_cmd = QSUB_TEMPLATE
-        stdo = path.join(SCRIPTS_FOLDER, name, 'log_{}'.format(script_name))
-        stde = path.join(SCRIPTS_FOLDER, name, 'err_{}'.format(script_name))
+        stdo = path.join(LOG_FOLDER, name, 'log_{}'.format(script_name))
+        stde = path.join(LOG_FOLDER, name, 'err_{}'.format(script_name))
         qsub_cmd = qsub_cmd\
             .replace(PPN_QSUB, str(ppn))\
             .replace(PRIORITY_QSUB, str(priority))\
