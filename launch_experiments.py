@@ -69,7 +69,7 @@ def create_results_folder(name, exp_id, planner, config, domain):
     results_folder_planner_domain = path.join(results_folder_planner, domain)
     os.mkdir(results_folder_planner_domain)
 
-    return results_folder_planner_domain
+    return path.abspath(results_folder_planner_domain)
 
 
 def manage_planner_copy(name, planner, config, domain, instance, exp_id, script_str):
@@ -113,16 +113,16 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                     if config not in cfg_map:
                         raise Exception(CFG_PLANNER_ERROR2.format(config, planner))
 
-                    path_to_pddl_domain = path.join(path_to_domains, pddl_domain)
-                    path_to_pddl_instance = path.join(path_to_domains, pddl_instance)
+                    path_to_pddl_domain = path.join(path_to_domains, domain, pddl_domain)
+                    path_to_pddl_instance = path.join(path_to_domains, domain, pddl_instance)
 
                     command_template = cfg_map[config]
                     planner_exe = command_template.replace(PLANNER_EXE_DOMAIN, path_to_pddl_domain) \
                         .replace(PLANNER_EXE_INSTANCE, path_to_pddl_instance) \
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
 
-                    stde = '{}_err'.format(path.join(solution_folder, '{}_{}'.format(domain, instance_name)))
-                    stdo = '{}_out'.format(path.join(solution_folder, '{}_{}'.format(domain, instance_name)))
+                    stde = '{}_err'.format(path.abspath(path.join(solution_folder, '{}_{}'.format(domain, instance_name))))
+                    stdo = '{}_out'.format(path.abspath(path.join(solution_folder, '{}_{}'.format(domain, instance_name))))
                     planner_exe += " 2>>{} 1>>{}".format(stde, stdo)
 
                     shell_script = manage_planner_copy(name, planner, config, domain, instance_name, exp_id, shell_script)
