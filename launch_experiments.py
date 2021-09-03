@@ -122,7 +122,9 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
 
                     # RIPRENDERE DA QUI !!! (mettere stdo e stde al run del planner)
-                    planner_exe += " d"
+                    stde = 'err_{}_{}_{}'.format(path.join(solution_folder), domain, instance_name)
+                    stdo = 'out_{}_{}_{}'.format(path.join(solution_folder), domain, instance_name)
+                    planner_exe += " 2>>{} 1>>{}".format(stde, stdo)
 
                     shell_script = manage_planner_copy(name, planner, config, domain, instance_name, exp_id, shell_script)
                     shell_script = shell_script.replace(MEMORY_SHELL, str(memory))
