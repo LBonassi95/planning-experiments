@@ -121,9 +121,10 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                         .replace(PLANNER_EXE_INSTANCE, path_to_pddl_instance) \
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
 
+                    # RIPRENDERE DA QUI !!! (mettere stdo e stde al run del planner)
                     stde = '{}_err'.format(path.abspath(path.join(solution_folder, '{}_{}'.format(domain, instance_name))))
                     stdo = '{}_out'.format(path.abspath(path.join(solution_folder, '{}_{}'.format(domain, instance_name))))
-                    planner_exe += " 2>>{} 1>>{}".format(stde, stdo)
+                    planner_exe += " 2>> {} 1>> {}".format(stde, stdo)
 
                     shell_script = manage_planner_copy(name, planner, config, domain, instance_name, exp_id, shell_script)
                     shell_script = shell_script.replace(MEMORY_SHELL, str(memory))
@@ -162,6 +163,7 @@ def execute_scripts(name, script_list, ppn, priority):
             .replace(LOG_QSUB, stdo)\
             .replace(ERR_QSUB, stde)
         print(qsub_cmd)
+        os.system(qsub_cmd)
 
 
 def main(args):
