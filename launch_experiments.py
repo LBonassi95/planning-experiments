@@ -53,7 +53,7 @@ def scripts_setup(name):
     return script_folder
 
 
-def create_results_folder(name, exp_id, planner, config, domain):
+def create_results_folder(name, exp_id, planner, config, domain, results_file):
     top_level_folder = path.join(RESULTS_FOLDER, name)
     if not path.isdir(top_level_folder):
         os.mkdir(top_level_folder)
@@ -65,6 +65,9 @@ def create_results_folder(name, exp_id, planner, config, domain):
     results_folder_planner = path.join(results_folder, '{}_{}'.format(planner, config))
     if not path.isdir(results_folder_planner):
         os.mkdir(results_folder_planner)
+
+    if not path.exists(results_file):
+        os.system('touch {}'.format(results_file))
 
     results_folder_planner_domain = path.join(results_folder_planner, domain)
     os.mkdir(results_folder_planner_domain)
@@ -82,6 +85,9 @@ def manage_planner_copy(name, planner, config, domain, instance, exp_id, script_
     planner_source = path.join(PLANNERS_FOLDER, planner, PLANNER_SOURCE_FOLDER)
     script_str = script_str.replace(PLANNER_DESTINATION, path.abspath(copy_planner_dst))
     script_str = script_str.replace(PLANNER_SOURCE, path.abspath(planner_source))
+
+    path_to_collect = path.abspath(path.join(PLANNERS_FOLDER, planner, 'collect_data.py'))
+    script_str = script_str.replace(SHELL_COLLECT_DATA, path_to_collect)
     return script_str
 
 
@@ -95,6 +101,8 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
     script_list = []
     script_folder = scripts_setup(name)
 
+    results_file = path.join(path.join(RESULTS_FOLDER, name), EXPERIMENT_RUN_FOLDER.format(exp_id), 'results.txt')
+
     for planner in run_dict.keys():
         cfg_path = path.join(PLANNERS_FOLDER, planner, CFG_MAP_PLANNER)
         if not path.isfile(cfg_path):
@@ -102,7 +110,7 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
         cfg_map = json.load(open(cfg_path,))
         for config in run_dict[planner][CONFIGS]:
             for domain in run_dict[planner][RUNS].keys():
-                solution_folder = create_results_folder(name, exp_id, planner, config, domain)
+                solution_folder = create_results_folder(name, exp_id, planner, config, domain, results_file)
                 for pddl_domain, pddl_instance in run_dict[planner][RUNS][domain]:
 
                     instance_name = pddl_instance.replace(PDDL_EXTENSION, '')
@@ -121,9 +129,8 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                         .replace(PLANNER_EXE_INSTANCE, path_to_pddl_instance) \
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
 
-                    # RIPRENDERE DA QUI !!! (mettere stdo e stde al run del planner)
-                    stde = '{}_err'.format(path.abspath(path.join(solution_folder, '{}_{}'.format(domain, instance_name))))
-                    stdo = '{}_out'.format(path.abspath(path.join(solution_folder, '{}_{}'.format(domain, instance_name))))
+                    stde = 'err_{}'.format(path.abspath(path.join(solution_folder, '{}_{}.txt'.format(domain, instance_name))))
+                    stdo = 'out_{}'.format(path.abspath(path.join(solution_folder, '{}_{}.txt'.format(domain, instance_name))))
                     planner_exe += " 2>> {} 1>> {}".format(stde, stdo)
 
                     shell_script = manage_planner_copy(name, planner, config, domain, instance_name, exp_id, shell_script)
@@ -131,6 +138,12 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                     shell_script = shell_script.replace(TIME_SHELL, str(time))
                     shell_script = shell_script.replace(PLANNER_EXE_SHELL, planner_exe)
 
+                    shell_script = shell_script\
+                        .replace(SHELL_SOL_FILE, path.join(solution_folder, solution_name))\
+                        .replace(SHELL_SOL_INSTANCE, instance_name)\
+                        .replace(SHELL_SOL_DOMAIN, domain)\
+                        .replace(SHELL_STDO, stdo).replace(SHELL_STDE, stde)\
+                        .replace(SHELL_RESULTS, results_file)
                     write_script(shell_script, script_name, script_folder)
                     script_list.append((script_name.replace('.sh', ''), path.join(script_folder, script_name)))
 
@@ -163,7 +176,7 @@ def execute_scripts(name, script_list, ppn, priority):
             .replace(LOG_QSUB, stdo)\
             .replace(ERR_QSUB, stde)
         print(qsub_cmd)
-        os.system(qsub_cmd)
+        #os.system(qsub_cmd)
 
 
 def main(args):
