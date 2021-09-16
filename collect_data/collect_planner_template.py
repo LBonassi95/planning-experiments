@@ -4,7 +4,7 @@ import json
 from collect_data_utils import *
 
 
-STDO_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION_OVERHEAD'),
+OVERHEAD_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION_OVERHEAD'),
                   ('\[EFFECT-OVERHEAD\]: [^\n ]*', 'EFFECT-OVERHEAD'),
                   ('\[ATOMS-OVERHEAD\]: [^\n ]*', 'ATOMS-OVERHEAD')]
 
@@ -15,6 +15,10 @@ def clean_overhead(string):
     return int(string.split(':')[1].strip())
 
 
+def clean_total_runtime(string):
+    return int(string.split(':')[1].strip())
+
+
 def collect(argv):
     results_file, domain, instance, stdo_str, stde_str, solution_str = get_data(argv)
 
@@ -22,8 +26,8 @@ def collect(argv):
 
     save_domain_instance(results_dict, domain, instance)
 
-    find_and_save_from_regex_single_match(results_dict, stdo_str, STDO_PAIRS, cleanup_function=clean_overhead)
-    find_and_save_from_regex_single_match(results_dict, stdo_str, STDE_PAIRS, cleanup_function=clean_overhead)
+    find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
+    find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
 
     write_results(results_dict, results_file)
 
