@@ -4,9 +4,11 @@ import json
 from collect_data_utils import *
 
 
-OVERHEAD_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION_OVERHEAD'),
+STDO_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION_OVERHEAD'),
                   ('\[EFFECT-OVERHEAD\]: [^\n ]*', 'EFFECT-OVERHEAD'),
                   ('\[ATOMS-OVERHEAD\]: [^\n ]*', 'ATOMS-OVERHEAD')]
+
+STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME')]
 
 
 def clean_overhead(string):
@@ -18,16 +20,12 @@ def collect(argv):
 
     results_dict = {}
 
-    find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
+    save_domain_instance(results_dict, domain, instance)
 
-    results_dict['INSTANCE'] = instance
-    results_dict['DOMAIN'] = domain
-    string = json.dumps(results_dict)
+    find_and_save_from_regex_single_match(results_dict, stdo_str, STDO_PAIRS, cleanup_function=clean_overhead)
+    find_and_save_from_regex_single_match(results_dict, stdo_str, STDE_PAIRS, cleanup_function=clean_overhead)
 
-    with open(results_file, 'a') as fout:
-        fcntl.flock(fout, fcntl.LOCK_EX)
-        fout.write(string + '\n')
-        fcntl.flock(fout, fcntl.LOCK_UN)
+    write_results(results_dict, results_file)
 
 
 if __name__ == '__main__':

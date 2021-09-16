@@ -1,6 +1,10 @@
 import re
+import json
+import fcntl
 
 NO_MATCH = '#NOMATCH#'
+INSTANCE = 'INSTANCE'
+DOMAIN = 'DOMAIN'
 
 
 def get_data(args):
@@ -38,3 +42,17 @@ def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs,
             else:
                 match = cleanup_function(match[0])
                 results_dict[dict_key] = match
+
+
+def save_domain_instance(results_dict, domain, instance):
+    results_dict[INSTANCE] = instance
+    results_dict[DOMAIN] = domain
+
+
+def write_results(results_dict, results_file):
+    string = json.dumps(results_dict)
+
+    with open(results_file, 'a') as fout:
+        fcntl.flock(fout, fcntl.LOCK_EX)
+        fout.write(string + '\n')
+        fcntl.flock(fout, fcntl.LOCK_UN)
