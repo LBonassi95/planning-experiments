@@ -16,7 +16,7 @@ def clean_overhead(string):
 
 
 def clean_total_runtime(string):
-    return int(string.split(':')[1].strip())
+    return float(string.split(':')[1].strip())
 
 
 def collect(argv):
