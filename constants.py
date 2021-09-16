@@ -54,7 +54,7 @@ cp -r #PLANNER_SOURCE#/* #PLANNER_DESTINATION#
 
 cd #PLANNER_DESTINATION#
 
-timeout --signal=HUP #TIME# #EXE-PLANNER#
+/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP #TIME# #EXE-PLANNER#
 
 rm -r -f #PLANNER_DESTINATION#
 
