@@ -86,7 +86,7 @@ def manage_planner_copy(name, planner, config, domain, instance, exp_id, script_
     script_str = script_str.replace(PLANNER_DESTINATION, path.abspath(copy_planner_dst))
     script_str = script_str.replace(PLANNER_SOURCE, path.abspath(planner_source))
 
-    path_to_collect = path.abspath(path.join(PLANNERS_FOLDER, 'collect_{}.py'.format(planner)))
+    path_to_collect = path.abspath(path.join(COLLECT_DATA_FOLDER, 'collect_{}.py'.format(planner)))
     script_str = script_str.replace(SHELL_COLLECT_DATA, path_to_collect)
     return script_str
 
@@ -176,7 +176,7 @@ def execute_scripts(name, script_list, ppn, priority):
             .replace(LOG_QSUB, stdo)\
             .replace(ERR_QSUB, stde)
         print(qsub_cmd)
-        #os.system(qsub_cmd)
+        os.system(qsub_cmd)
 
 
 def main(args):
