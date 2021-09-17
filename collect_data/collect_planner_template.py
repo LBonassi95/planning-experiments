@@ -1,6 +1,4 @@
-import fcntl
 import sys
-import json
 from collect_data_utils import *
 
 
@@ -20,11 +18,11 @@ def clean_total_runtime(string):
 
 
 def collect(argv):
-    results_file, domain, instance, stdo_str, stde_str, solution_str = get_data(argv)
+    system, results_file, domain, instance, stdo_str, stde_str, solution_str = get_data(argv)
 
     results_dict = {}
 
-    save_domain_instance(results_dict, domain, instance)
+    save_domain_instance_system(system, results_dict, domain, instance)
 
     find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
     find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
