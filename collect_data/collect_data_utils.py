@@ -5,15 +5,17 @@ import fcntl
 NO_MATCH = '#NOMATCH#'
 INSTANCE = 'INSTANCE'
 DOMAIN = 'DOMAIN'
+SYSTEM = 'SYSTEM'
 
 
 def get_data(args):
-    results_file = args[1]
-    solution_file = args[2]
-    instance = args[3]
-    domain = args[4]
-    stdo = args[5]
-    stde = args[6]
+    system = args[1]
+    results_file = args[2]
+    solution_file = args[3]
+    instance = args[4]
+    domain = args[5]
+    stdo = args[6]
+    stde = args[7]
 
     with open(solution_file, 'r') as solution_read:
         solution_str = solution_read.read()
@@ -24,7 +26,7 @@ def get_data(args):
     with open(stde, 'r') as stde_read:
         stde_str = stde_read.read()
 
-    return results_file, domain, instance, stdo_str, stde_str, solution_str
+    return system, results_file, domain, instance, stdo_str, stde_str, solution_str
 
 
 def find_regex(regex, string):
@@ -44,9 +46,10 @@ def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs,
                 results_dict[dict_key] = match
 
 
-def save_domain_instance(results_dict, domain, instance):
+def save_domain_instance_system(results_dict, system, domain, instance):
     results_dict[INSTANCE] = instance
     results_dict[DOMAIN] = domain
+    results_dict[SYSTEM] = system
 
 
 def write_results(results_dict, results_file):

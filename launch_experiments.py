@@ -146,7 +146,8 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                         .replace(SHELL_SOL_INSTANCE, instance_name)\
                         .replace(SHELL_SOL_DOMAIN, domain)\
                         .replace(SHELL_STDO, stdo).replace(SHELL_STDE, stde)\
-                        .replace(SHELL_RESULTS, path.abspath(results_file))
+                        .replace(SHELL_RESULTS, path.abspath(results_file))\
+                        .replace(SHELL_SYSTEM, '{}_{}'.format(planner, config))
                     write_script(shell_script, script_name, script_folder)
                     script_list.append((script_name.replace('.sh', ''), path.join(script_folder, script_name)))
 
