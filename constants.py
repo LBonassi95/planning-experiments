@@ -73,7 +73,7 @@ QSUB_TEMPLATE += "nodes=minsky.ing.unibs.it:ppn=#PPN# "
 QSUB_TEMPLATE += "#SCRIPT#"
 
 EXPERIMENT_RUN_FOLDER = "RUN_{}"
-PLANNER_SOURCE_FOLDER = "PLANNER_SOURCE"
+SOURCE_FOLDER = "SOURCE"
 CFG_MAP_PLANNER = "cfg_map.json"
 
 PLANNERS_FOLDER = 'systems'
@@ -81,3 +81,23 @@ SCRIPTS_FOLDER = 'scripts'
 LOG_FOLDER = 'logs'
 RESULTS_FOLDER = 'results'
 COLLECT_DATA_FOLDER = 'collect_data'
+
+COMPILER_MANAGER = "compiler_manager.py"
+COMPILER_MANAGER_TEMPLATE = '''
+
+CONFIG_ERROR = "Error! Configuration {} not defined!"
+
+
+class ConfigException(Exception):
+    pass
+
+
+class CompilerManager:
+
+    def __init__(self, config):
+        self.config = config
+
+    def setup_system(self):
+        raise ConfigException(CONFIG_ERROR.format(self.config))
+
+'''
