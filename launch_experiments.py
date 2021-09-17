@@ -86,8 +86,6 @@ def manage_planner_copy(name, planner, config, domain, instance, exp_id, script_
     script_str = script_str.replace(PLANNER_DESTINATION, path.abspath(copy_planner_dst))
     script_str = script_str.replace(PLANNER_SOURCE, path.abspath(planner_source))
 
-    path_to_collect = path.abspath(path.join(COLLECT_DATA_FOLDER, 'collect_{}.py'.format(planner)))
-    script_str = script_str.replace(SHELL_COLLECT_DATA, path_to_collect)
     return script_str
 
 
@@ -139,6 +137,9 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                     shell_script = shell_script.replace(MEMORY_SHELL, str(memory))
                     shell_script = shell_script.replace(TIME_SHELL, str(time))
                     shell_script = shell_script.replace(PLANNER_EXE_SHELL, planner_exe)
+
+                    path_to_collect = path.abspath(path.join(COLLECT_DATA_FOLDER, run_dict[planner][COLLECT_DATA]))
+                    shell_script = shell_script.replace(SHELL_COLLECT_DATA, path_to_collect)
 
                     shell_script = shell_script\
                         .replace(SHELL_SOL_FILE, path.join(solution_folder, solution_name))\
