@@ -81,4 +81,4 @@ SCRIPTS_FOLDER = 'scripts'
 LOG_FOLDER = 'logs'
 RESULTS_FOLDER = 'results'
 COLLECT_DATA_FOLDER = 'collect_data'
-
+COLLECT_DATA = "COLLECT"

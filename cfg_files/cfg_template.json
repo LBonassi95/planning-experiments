@@ -5,12 +5,14 @@
     "planner1": {
       "COMPILER": "None",
       "DOMAINS": ["domain1", "domain2"],
-      "CONFIGS": ["BASE"]
+      "CONFIGS": ["BASE"],
+      "COLLECT": "collect_data_base.py"
     },
     "planner2": {
       "COMPILER": "False",
       "DOMAINS": ["domain1", "domain2"],
-      "CONFIGS": ["BASE"]
+      "CONFIGS": ["BASE"],
+      "COLLECT": "collect_data_base.py"
     }
   },
   "MEMORY": 8000000,
