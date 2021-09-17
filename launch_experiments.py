@@ -4,13 +4,8 @@ import os.path as path
 import sys
 import random
 import datetime
-import importlib
 
 from constants import *
-
-
-class CompilerManagerException(Exception):
-    pass
 
 
 def collect_instances(path_to_domains, domain):
@@ -80,14 +75,14 @@ def create_results_folder(name, exp_id, planner, config, domain, results_file):
     return path.abspath(results_folder_planner_domain)
 
 
-def manage_planner_copy(name, planner, config, domain, instance, exp_id, script_str, source):
+def manage_planner_copy(name, planner, config, domain, instance, exp_id, script_str):
     tmp_dir = path.join(PLANNERS_FOLDER, planner, PLANNER_COPIES_FOLDER)
     if not path.isdir(tmp_dir):
         os.mkdir(tmp_dir)
     copy_planner_dst = path.join(tmp_dir,
                                  'copy_{name}_{planner}_{config}_{domain}_{instance}_{exp_id}'
                                  .format(name=name, planner=planner, config=config, domain=domain, instance=instance, exp_id=exp_id))
-    planner_source = path.join(PLANNERS_FOLDER, planner, source)
+    planner_source = path.join(PLANNERS_FOLDER, planner, SOURCE_FOLDER)
     script_str = script_str.replace(PLANNER_DESTINATION, path.abspath(copy_planner_dst))
     script_str = script_str.replace(PLANNER_SOURCE, path.abspath(planner_source))
 
@@ -116,15 +111,6 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
         cfg_map = json.load(open(cfg_path,))
 
         for config in run_dict[planner][CONFIGS]:
-            source = PLANNER_SOURCE
-            if run_dict[planner][COMPILER] == "True":
-                try:
-                    compiler_manager = importlib.import_module('systems.{}.compiler_manager'.format(planner))
-                    manager = compiler_manager.CompilerManager(config)
-                    source = manager.setup_system()
-                except ModuleNotFoundError:
-                    raise CompilerManagerException(COMPILER_MANAGER_ERROR.format(planner))
-
             for domain in run_dict[planner][RUNS].keys():
                 solution_folder = create_results_folder(name, exp_id, planner, config, domain, results_file)
                 for pddl_domain, pddl_instance in run_dict[planner][RUNS][domain]:

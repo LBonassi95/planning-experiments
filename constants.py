@@ -20,7 +20,6 @@ PLANNER_NOT_FOUND = "WARNING! planner {planner_name} not found, skipped!"
 PLANNER_REGISTERED = "Success! planner {planner_name} registered"
 CFG_PLANNER_ERROR1 = 'ERROR! configurations file for {} not found'
 CFG_PLANNER_ERROR2 = 'ERROR! configuration {} for {} not found'
-COMPILER_MANAGER_ERROR = "ERROR! compiler manager for {} not found!"
 ##############
 
 PLANNER_EXE_DOMAIN = "#DOMAIN#"
@@ -83,27 +82,3 @@ LOG_FOLDER = 'logs'
 RESULTS_FOLDER = 'results'
 COLLECT_DATA_FOLDER = 'collect_data'
 
-COMPILER_MANAGER = "compiler_manager.py"
-COMPILER_MANAGER_TEMPLATE = '''
-
-
-CONFIG_ERROR = "Error! Configuration {} not defined!"
-
-
-class ConfigException(Exception):
-    pass
-
-
-class CompilerManager:
-
-    def __init__(self, config):
-        self.config = config
-
-    def setup_system(self):
-        created_system_source = None
-        if True:
-            return created_system_source
-        else:
-            raise ConfigException(CONFIG_ERROR.format(self.config))
-
-'''

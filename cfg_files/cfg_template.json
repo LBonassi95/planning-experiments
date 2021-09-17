@@ -3,7 +3,7 @@
   "PATH_TO_DOMAINS" : "/home/luigi/Desktop/test",
   "PLANNERS_X_DOMAINS" : {
     "planner1": {
-      "COMPILER": "True",
+      "COMPILER": "None",
       "DOMAINS": ["domain1", "domain2"],
       "CONFIGS": ["BASE"]
     },
