@@ -1,4 +1,5 @@
 import os
+from os import path
 import sys
 from constants import PLANNERS_FOLDER, ALREADY_REGISTERED, PLANNER_SOURCE_FOLDER, PLANNER_NOT_FOUND, PLANNER_REGISTERED, COLLECT_DATA_FOLDER
 
@@ -20,7 +21,7 @@ def main(args):
                     os.mkdir(planner_home)
                     os.system('cp -r {} {}'.format(planner_path, planner_dst))
                     os.system('touch {}'.format(os.path.join(planner_home, 'cfg_map.json')))
-                    os.system('touch {}'.format(os.path.join(COLLECT_DATA_FOLDER, 'collect_{}.py'.format(planner_name))))
+                    os.system('touch {}'.format(path.abspath(os.path.join(COLLECT_DATA_FOLDER, 'collect_{}.py'.format(planner_name)))))
                     print(PLANNER_REGISTERED.format(planner_name=planner_name))
     else:
         print('No planner to register!')
