@@ -32,7 +32,7 @@ def get_data(args):
     else:
         with open(solution_file, 'r') as solution_read:
             solution_str = solution_read.read()
-        val_res = validate(val_info, solution_str)
+        val_res = validate(val_info, solution_file)
 
     with open(stdo, 'r') as stdo_read:
         stdo_str = stdo_read.read()
@@ -49,6 +49,7 @@ def validate(val_info, solution):
     else:
         domain4val = val_info.split('#')[0]
         instance4val = val_info.split('#')[1]
+        print(VAL_COMMAND.format(domain4val, instance4val, solution))
         stdout, stderr = system_call(VAL_COMMAND.format(domain4val, instance4val, solution))
         # print stdout
 

@@ -10,7 +10,7 @@ STEPS_PARIS = [('Plan length: [^\n ]*', 'PLAN_STEPS')]
 
 STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME')]
 
-SEARCH_TIME_PAIRS = [('Actual search time: [^\n ]*', 'PLAN_STEPS')]
+SEARCH_TIME_PAIRS = [('Actual search time: [^\n ]*', 'LAMA_RUNTIME')]
 
 #Actual search time: 50.5164s [t=51.095s]
 
@@ -20,7 +20,7 @@ def clean_overhead(string):
 
 
 def clean_fd_search_time(string):
-    return int(string.split(':')[1].split('s')[0].strip())
+    return float(string.split(':')[1].split('s')[0].strip())
 
 
 def clean_fd(string):
