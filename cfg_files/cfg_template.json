@@ -6,7 +6,8 @@
       "COMPILER": "None",
       "DOMAINS": ["domain1", "domain2"],
       "CONFIGS": ["BASE"],
-      "COLLECT": "collect_data_base.py"
+      "COLLECT": "collect_data_base.py",
+      "DOMAINS4VAL": {"domain2":  "domain2-alt"}
     },
     "planner2": {
       "COMPILER": "False",

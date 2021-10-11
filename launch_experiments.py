@@ -141,13 +141,22 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
                     path_to_collect = path.abspath(path.join(COLLECT_DATA_FOLDER, run_dict[planner][COLLECT_DATA]))
                     shell_script = shell_script.replace(SHELL_COLLECT_DATA, path_to_collect)
 
+                    if DOMAINS4VAL not in run_dict[planner].keys() or domain not in run_dict[planner][DOMAINS4VAL]:
+                        val = NO_VALIDATION_PERFORMED
+                    else:
+                        domain4val = run_dict[planner][DOMAINS4VAL].get(domain, NO_VALIDATION_PERFORMED)
+                        path_to_domain4val = path.join(path_to_domains, domain4val, pddl_domain)
+                        path_to_instance4val = path.join(path_to_domains, domain4val, pddl_instance)
+                        val = '{}#{}'.format(path_to_domain4val, path_to_instance4val)
+
                     shell_script = shell_script\
                         .replace(SHELL_SOL_FILE, path.join(solution_folder, solution_name))\
                         .replace(SHELL_SOL_INSTANCE, instance_name)\
                         .replace(SHELL_SOL_DOMAIN, domain)\
                         .replace(SHELL_STDO, stdo).replace(SHELL_STDE, stde)\
                         .replace(SHELL_RESULTS, path.abspath(results_file))\
-                        .replace(SHELL_SYSTEM, '{}_{}'.format(planner, config))
+                        .replace(SHELL_SYSTEM, '{}_{}'.format(planner, config))\
+                        .replace(SHELL_DOMAIN4VAL, val)
                     write_script(shell_script, script_name, script_folder)
                     script_list.append((script_name.replace('.sh', ''), path.join(script_folder, script_name)))
 

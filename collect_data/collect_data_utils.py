@@ -1,11 +1,19 @@
 import re
 import json
 import fcntl
+import os.path
+import subprocess
+
+VALIDATED = "VALIDATED"
 
 NO_MATCH = '#NOMATCH#'
 INSTANCE = 'INSTANCE'
 DOMAIN = 'DOMAIN'
 SYSTEM = 'SYSTEM'
+NO_SOLUTION = 'NO_SOLUTION'
+NO_VALIDATION_PERFORMED = 'NoValidationPerformed'
+VAL_COMMAND = 'validate -v {} {} {}'
+SUCCESSFUL_PLAN = 'Successful plans:'
 
 
 def get_data(args):
@@ -16,9 +24,15 @@ def get_data(args):
     domain = args[5]
     stdo = args[6]
     stde = args[7]
+    val_info = args[8]
 
-    with open(solution_file, 'r') as solution_read:
-        solution_str = solution_read.read()
+    if not os.path.exists(solution_file):
+        solution_str = NO_SOLUTION
+        val_res = NO_VALIDATION_PERFORMED
+    else:
+        with open(solution_file, 'r') as solution_read:
+            solution_str = solution_read.read()
+        val_res = validate(val_info, solution_str)
 
     with open(stdo, 'r') as stdo_read:
         stdo_str = stdo_read.read()
@@ -26,12 +40,31 @@ def get_data(args):
     with open(stde, 'r') as stde_read:
         stde_str = stde_read.read()
 
-    return system, results_file, domain, instance, stdo_str, stde_str, solution_str
+    return system, results_file, domain, instance, stdo_str, stde_str, solution_str, val_res
+
+
+def validate(val_info, solution):
+    if val_info == NO_VALIDATION_PERFORMED:
+        val_res = NO_VALIDATION_PERFORMED
+    else:
+        domain4val = val_info.split('#')[0]
+        instance4val = val_info.split('#')[1]
+        stdout, stderr = system_call(VAL_COMMAND.format(domain4val, instance4val, solution))
+        # print stdout
+
+        stdout = (stdout.decode('ascii'))
+        print(stdout)
+        val_res = str(SUCCESSFUL_PLAN in stdout)
+    return val_res
 
 
 def find_regex(regex, string):
     matches = re.findall(regex, string, flags=re.DOTALL)
     return matches
+
+
+def manage_no_solution(instance, domain, system):
+    return {INSTANCE: instance, DOMAIN: domain, SYSTEM: system, 'SOLUTION': 'NO SOLUTION'}
 
 
 def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs, cleanup_function=None):
@@ -46,10 +79,11 @@ def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs,
                 results_dict[dict_key] = match
 
 
-def save_domain_instance_system(results_dict, system, domain, instance):
+def save_domain_instance_system_validation(results_dict, system, domain, instance, validated):
     results_dict[INSTANCE] = instance
     results_dict[DOMAIN] = domain
     results_dict[SYSTEM] = system
+    results_dict[VALIDATED] = validated
 
 
 def write_results(results_dict, results_file):
@@ -59,3 +93,12 @@ def write_results(results_dict, results_file):
         fcntl.flock(fout, fcntl.LOCK_EX)
         fout.write(string + '\n')
         fcntl.flock(fout, fcntl.LOCK_UN)
+
+
+def system_call(command):
+    p = subprocess.Popen(
+        [command],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True)
+    return p.stdout.read(), p.stderr.read()
