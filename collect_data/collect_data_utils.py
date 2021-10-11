@@ -4,6 +4,10 @@ import fcntl
 import os.path
 import subprocess
 
+TIME_SPENT_FF = 'time spent:'
+
+STEP_FF = 'step'
+
 VALIDATED = "VALIDATED"
 
 NO_MATCH = '#NOMATCH#'
@@ -14,6 +18,7 @@ NO_SOLUTION = 'NO_SOLUTION'
 NO_VALIDATION_PERFORMED = 'NoValidationPerformed'
 VAL_COMMAND = 'validate -v {} {} {}'
 SUCCESSFUL_PLAN = 'Successful plans:'
+FF = ['ff-x']
 
 
 def get_data(args):
@@ -32,7 +37,15 @@ def get_data(args):
     else:
         with open(solution_file, 'r') as solution_read:
             solution_str = solution_read.read()
-        val_res = validate(val_info, solution_file)
+
+        if system in FF:
+            solution_str = clean_ff_solution(solution_str)
+            if solution_str != NO_SOLUTION:
+                val_res = validate(val_info, solution_file)
+            else:
+                val_res = NO_VALIDATION_PERFORMED
+        else:
+            val_res = validate(val_info, solution_file)
 
     with open(stdo, 'r') as stdo_read:
         stdo_str = stdo_read.read()
@@ -103,3 +116,18 @@ def system_call(command):
         stderr=subprocess.PIPE,
         shell=True)
     return p.stdout.read(), p.stderr.read()
+
+
+def clean_ff_solution(sol_str):
+    if STEP_FF not in sol_str:
+        return NO_SOLUTION
+    else:
+        start = sol_str.find(STEP_FF)
+        end = sol_str.find(TIME_SPENT_FF)
+
+        actions = sol_str[start:end]
+        actions = actions.strip().split('\n')
+
+        ok_actions = ['({})'.format(a.lower().replace('__', ' ').split(':')[1].strip()) for a in actions]
+        return '\n'.join(ok_actions)
+
