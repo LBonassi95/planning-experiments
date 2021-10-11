@@ -43,7 +43,7 @@ SHELL_STDE = "#STDE#"
 SHELL_RESULTS = "#RESULTS#"
 SHELL_SYSTEM = "#SYSTEM#"
 
-RM_CMD = 'rm -r {}'
+RM_CMD = 'rm -r -f {}'
 
 SHELL_TEMPLATE = '''
 #!/bin/bash
