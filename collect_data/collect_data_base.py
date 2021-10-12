@@ -6,10 +6,11 @@ OVERHEAD_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION-OVERHEAD'
                   ('\[EFFECT-OVERHEAD\]: [^\n ]*', 'EFFECT-OVERHEAD'),
                   ('\[ATOMS-OVERHEAD\]: [^\n ]*', 'ATOMS-OVERHEAD')]
 
-INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-TCORE-COMPILATION-RUNTIME'),
-              ('PCC-TCORE-RUNTIME: [^\n ]*', 'TCORE-RUNTIME'),
+INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-PCC-TCORE-RUNTIME'),
+              ('PCC-TCORE-RUNTIME: [^\n ]*', 'PCC-TCORE-RUNTIME'),
               ('DONE-ACTION-ADDED: [^\n ]*', 'NUM-DONE-ACTION-ADDED'),
-              ('DONE-ACTION-ADDED-IN: [^\n ]*', 'DONE-ACTION-RUNTIME')]
+              ('DONE-ACTION-ADDED-IN: [^\n ]*', 'DONE-ACTION-RUNTIME'),
+              ('PCC-RUNTIME:: [^\n ]*', 'PCC-RUNTIME')]
 
 STEPS_PARIS = [('Plan length: [^\n ]*', 'PLAN_STEPS')]
 
