@@ -22,7 +22,7 @@ SEARCH_TIME_PAIRS = [('Actual search time: [^\n ]*', 'LAMA_RUNTIME')]
 
 
 def clean_overhead(string):
-    return int(string.split(':')[1].strip())
+    return float(string.split(':')[1].strip())
 
 
 def clean_fd_search_time(string):
@@ -48,6 +48,7 @@ def collect(argv):
         save_domain_instance_system_validation(results_dict, system, domain, instance, validated)
 
         find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)
         find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
         find_and_save_from_regex_single_match(results_dict, stdo_str, STEPS_PARIS, cleanup_function=clean_fd)
         find_and_save_from_regex_single_match(results_dict, stdo_str, SEARCH_TIME_PAIRS,
