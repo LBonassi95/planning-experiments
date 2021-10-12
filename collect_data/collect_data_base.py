@@ -2,9 +2,14 @@ import sys
 from collect_data_utils import *
 import os
 
-OVERHEAD_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION_OVERHEAD'),
+OVERHEAD_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION-OVERHEAD'),
                   ('\[EFFECT-OVERHEAD\]: [^\n ]*', 'EFFECT-OVERHEAD'),
                   ('\[ATOMS-OVERHEAD\]: [^\n ]*', 'ATOMS-OVERHEAD')]
+
+INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-TCORE-COMPILATION-RUNTIME'),
+              ('PCC-TCORE-RUNTIME: [^\n ]*', 'TCORE-RUNTIME'),
+              ('DONE-ACTION-ADDED: [^\n ]*', 'NUM-DONE-ACTION-ADDED'),
+              ('DONE-ACTION-ADDED-IN: [^\n ]*', 'DONE-ACTION-RUNTIME')]
 
 STEPS_PARIS = [('Plan length: [^\n ]*', 'PLAN_STEPS')]
 
@@ -12,7 +17,8 @@ STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME')]
 
 SEARCH_TIME_PAIRS = [('Actual search time: [^\n ]*', 'LAMA_RUNTIME')]
 
-#Actual search time: 50.5164s [t=51.095s]
+
+# Actual search time: 50.5164s [t=51.095s]
 
 
 def clean_overhead(string):
@@ -44,7 +50,8 @@ def collect(argv):
         find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
         find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
         find_and_save_from_regex_single_match(results_dict, stdo_str, STEPS_PARIS, cleanup_function=clean_fd)
-        find_and_save_from_regex_single_match(results_dict, stdo_str, SEARCH_TIME_PAIRS, cleanup_function=clean_fd_search_time)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, SEARCH_TIME_PAIRS,
+                                              cleanup_function=clean_fd_search_time)
 
     write_results(results_dict, results_file)
 
