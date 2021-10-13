@@ -186,7 +186,6 @@ def get_coverage(df, domain_column=DOMAIN, runtime_column=TOTALRUNTIME):
     coverage = coverage.T
     ax = coverage.plot.bar(color = ['b', 'k', 'y', 'limegreen', 'slategray', 'r'], legend=False, figsize=(10, 4))
     ax.legend().set_title("")
-    plt.yticks(np.arange(0, 100, 10))
     ax.set_axisbelow(True)
     ax.legend(fontsize=15)
     plt.grid()
