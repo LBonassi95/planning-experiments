@@ -4,7 +4,7 @@ import os.path as path
 import sys
 import random
 import datetime
-
+import click
 from constants import *
 
 
@@ -95,7 +95,7 @@ def write_script(shell_script, script_name, script_dst):
         output_writer.write(shell_script)
 
 
-def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains):
+def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains, short_name):
     script_list = []
     script_folder = scripts_setup(name)
 
@@ -197,20 +197,22 @@ def copy_elaborate_data(exp_id, name):
     os.system('cp ./elaborate_data.py {}'.format(results_folder))
 
 
-def main(args):
-    cfg = args[1]
+@click.command()
+@click.argument('cfg')
+@click.option('--short_name', '-n', default='')
+def main(cfg, short_name):
     cfg_dict = json.load(open(cfg, ))
     run_dict = cfg_dict[PLANNERS_X_DOMAINS]
     delete_old_planners(run_dict)
     name = cfg_dict[NAME]
-    exp_id = str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
+    exp_id = short_name + str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
     path_to_domains = cfg_dict[PATH_TO_DOMAINS]
     memory = cfg_dict[MEMORY]
     time = cfg_dict[TIME]
 
     collect_runs(run_dict, path_to_domains)
 
-    script_list = create_scripts(name, exp_id, run_dict, memory, time, path_to_domains)
+    script_list = create_scripts(name, exp_id, run_dict, memory, time, path_to_domains, short_name)
 
     execute_scripts(name, script_list, cfg_dict[PPN], cfg_dict[PRIORITY])
 
@@ -218,4 +220,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()
