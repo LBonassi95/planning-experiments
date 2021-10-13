@@ -10,7 +10,7 @@ INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-PCC-TCORE-RUNTIME'),
               ('PCC-TCORE-RUNTIME: [^\n ]*', 'PCC-TCORE-RUNTIME'),
               ('DONE-ACTION-ADDED: [^\n ]*', 'NUM-DONE-ACTION-ADDED'),
               ('DONE-ACTION-ADDED-IN: [^\n ]*', 'DONE-ACTION-RUNTIME'),
-              ('PCC-RUNTIME:: [^\n ]*', 'PCC-RUNTIME')]
+              ('PCC-RUNTIME: [^\n ]*', 'PCC-RUNTIME')]
 
 STEPS_PARIS = [('Plan length: [^\n ]*', 'PLAN_STEPS')]
 
