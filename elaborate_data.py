@@ -13,10 +13,7 @@ TOTALRUNTIME = 'TOTALRUNTIME'
 
 DOMAIN = 'DOMAIN'
 
-rc('font', **{'family': 'sans-serif', 'sans-serif': ['Courier']})
-rc('text', usetex=True)
 from os import path
-import constants
 
 
 def format_func(value, tick_number):
@@ -26,18 +23,6 @@ def format_func(value, tick_number):
         return "{:.1f}".format(value)
     else:
         return "{:.0f}".format(value)
-
-
-def get_name(name):
-    if name == 'pcc_LAMA':
-        return 'pcc'
-    if name == 'pcc_PCC-TCORE-LAMA':
-        return 'pcc+tcore'
-    if name == 'pcc-ltlexp_LAMA':
-        return 'pcc+ltlexp'
-    if name == 'pcc-ltlpoly_LAMA':
-        return 'pcc+ltlpoly'
-    return name
 
 
 def get_tot_keys(json_lst):
@@ -78,7 +63,7 @@ def survival_plot(df, system_column=SYSTEM, runtime_column=TOTALRUNTIME, outfold
     planners = get_col_domain(df, system_column)
     upper = 0
     for planner in planners:
-        legend.append(r'\textsc{' + get_name(planner) + '}')
+        legend.append(planner)
         df_planner = df[df[system_column] == planner]
         upper = len(df_planner)
         y = np.zeros(len(x))
@@ -115,7 +100,7 @@ def survival_plot_over_domains(df, domain_column=DOMAIN, runtime_column=TOTALRUN
     legend = []
     upper = 0
     for dom in get_col_domain(df, domain_column):
-        legend.append(r'\textsc{' + get_name(dom) + '}')
+        legend.append(dom)
         df_planner = df[df[domain_column] == dom]
         upper = len(df_planner)
         y = np.zeros(len(x))
@@ -152,7 +137,7 @@ def makespan_plot(df, system_column=SYSTEM, steps_column=PLAN_STEPS, outfolder='
     legend = []
     planners = get_col_domain(df, system_column)
     for planner in planners:
-        legend.append(r'\textsc{' + get_name(planner) + '}')
+        legend.append(planner)
         df_planner = df[df[system_column] == planner]
         df_planner = df_planner.sort_values('INSTANCE')
         y = list(df_planner[steps_column])
@@ -184,7 +169,7 @@ def get_coverage(df, domain_column=DOMAIN, runtime_column=TOTALRUNTIME):
     coverage = pd.DataFrame(dictionary)
     coverage = coverage.set_index(SYSTEM)
     coverage = coverage.T
-    ax = coverage.plot.bar(color = ['b', 'k', 'y', 'limegreen', 'slategray', 'r'], legend=False, figsize=(10, 4))
+    ax = coverage.plot.bar(legend=False, figsize=(10, 4))
     ax.legend().set_title("")
     ax.set_axisbelow(True)
     ax.legend(fontsize=15)
