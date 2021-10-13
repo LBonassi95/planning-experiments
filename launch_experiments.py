@@ -192,6 +192,11 @@ def execute_scripts(name, script_list, ppn, priority):
         os.system(qsub_cmd)
 
 
+def copy_elaborate_data(exp_id, name):
+    results_folder = path.join(path.join(RESULTS_FOLDER, name), EXPERIMENT_RUN_FOLDER.format(exp_id))
+    os.system('cp ./elaborate_data.py {}'.format(results_folder))
+
+
 def main(args):
     cfg = args[1]
     cfg_dict = json.load(open(cfg, ))
@@ -208,6 +213,8 @@ def main(args):
     script_list = create_scripts(name, exp_id, run_dict, memory, time, path_to_domains)
 
     execute_scripts(name, script_list, cfg_dict[PPN], cfg_dict[PRIORITY])
+
+    copy_elaborate_data(exp_id, name)
 
 
 if __name__ == '__main__':

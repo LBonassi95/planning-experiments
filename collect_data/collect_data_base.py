@@ -18,8 +18,13 @@ STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME')]
 
 SEARCH_TIME_PAIRS = [('Actual search time: [^\n ]*', 'LAMA_RUNTIME')]
 
+MEMORY_ERROR = [('MemoryError', 'MEMORY-ERROR')]
+
 
 # Actual search time: 50.5164s [t=51.095s]
+
+def memory_error(string):
+    return 'MEMORY-ERROR'
 
 
 def clean_overhead(string):
@@ -54,6 +59,7 @@ def collect(argv):
         find_and_save_from_regex_single_match(results_dict, stdo_str, STEPS_PARIS, cleanup_function=clean_fd)
         find_and_save_from_regex_single_match(results_dict, stdo_str, SEARCH_TIME_PAIRS,
                                               cleanup_function=clean_fd_search_time)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, MEMORY_ERROR, cleanup_function=memory_error)
 
     write_results(results_dict, results_file)
 
