@@ -48,6 +48,7 @@ def collect(argv):
 
     if solution_str == NO_SOLUTION:
         results_dict = manage_no_solution(instance, domain, system)
+        find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
     else:
         results_dict = {}
 

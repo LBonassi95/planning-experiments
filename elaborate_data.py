@@ -95,19 +95,22 @@ def survival_plot(df, system_column=SYSTEM, runtime_column=TOTALRUNTIME, outfold
 
 
 def survival_plot_over_domains(df, domain_column=DOMAIN, runtime_column=TOTALRUNTIME, outfolder='./', name=""):
+    for index, row in df.iterrows():
+        df.loc[index, DOMAIN] = df.loc[index, SYSTEM] + df.loc[index, DOMAIN]
+
     plt.figure(num=None, dpi=600, facecolor='w', edgecolor='k', figsize=(8, 5))
     x = np.geomspace(0.01, 1800, num=100)
     legend = []
     upper = 0
     for dom in get_col_domain(df, domain_column):
         legend.append(dom)
-        df_planner = df[df[domain_column] == dom]
-        upper = len(df_planner)
+        df_domain = df[df[domain_column] == dom]
+        upper = len(df_domain)
         y = np.zeros(len(x))
         for i in range(len(x)):
             coverage = 0
             t = x[i]
-            for index, row in df_planner.iterrows():
+            for index, row in df_domain.iterrows():
                 time = row[runtime_column]
                 if time <= t:
                     coverage += 1
@@ -125,7 +128,7 @@ def survival_plot_over_domains(df, domain_column=DOMAIN, runtime_column=TOTALRUN
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     # plt.legend(legend, bbox_to_anchor=(0.69, 0.44), loc='best', fontsize=14)
-    plt.legend(legend, loc='best', fontsize=15, borderaxespad=0, handletextpad=0.5, framealpha=1)
+    plt.legend(legend, loc='best', fontsize=13, borderaxespad=0, handletextpad=0.5, framealpha=1)
     plt.savefig(path.join(outfolder, "./survival_plot_{}.png".format(name)), bbox_inches='tight')
     plt.close()
 
@@ -153,7 +156,7 @@ def makespan_plot(df, system_column=SYSTEM, steps_column=PLAN_STEPS, outfolder='
 
 
 def get_coverage(df, domain_column=DOMAIN, runtime_column=TOTALRUNTIME):
-    df_ok = df.dropna(subset=[TOTALRUNTIME], inplace=False)
+    df_ok = df.drop(df[df['SOLUTION'] == 'NO SOLUTION'].index)
     domains = get_col_domain(df, DOMAIN)
     planners = get_col_domain(df, SYSTEM)
     dictionary = {SYSTEM: []}
@@ -195,5 +198,8 @@ if __name__ == '__main__':
     df = json2dataframe(json_list)
     preprocess(df)
     get_coverage(df)
-    survival_plot(df, outfolder='./', name='experiment')
-    makespan_plot(df, outfolder='./', name='experiment')
+    survival_plot(df, outfolder='./', name='')
+    makespan_plot(df, outfolder='./', name='')
+
+    df_copy = df.copy(deep=True)
+    survival_plot_over_domains(df_copy, outfolder='./', name='over_domains')
