@@ -12,7 +12,7 @@ INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-PCC-TCORE-RUNTIME'),
               ('DONE-ACTION-ADDED-IN: [^\n ]*', 'DONE-ACTION-RUNTIME'),
               ('PCC-RUNTIME: [^\n ]*', 'PCC-RUNTIME')]
 
-STEPS_PARIS = [('Plan length: [^\n ]*', 'PLAN_STEPS')]
+STEPS_PARIS = [('Plan length: [^\n ]*', 'FD_PLAN_STEPS')]
 
 STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME')]
 
@@ -44,7 +44,7 @@ def clean_total_runtime(string):
 
 
 def collect(argv):
-    system, results_file, domain, instance, stdo_str, stde_str, solution_str, validated = get_data(argv)
+    system, results_file, domain, instance, stdo_str, stde_str, solution_str, plan_length, validated, validator_value = get_data(argv)
 
     if solution_str == NO_SOLUTION:
         results_dict = manage_no_solution(instance, domain, system)
@@ -52,7 +52,7 @@ def collect(argv):
     else:
         results_dict = {}
 
-        save_domain_instance_system_validation(results_dict, system, domain, instance, validated)
+        save_domain_instance_system_validation(results_dict, system, domain, instance, validated, plan_length, validator_value)
 
         find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
         find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)

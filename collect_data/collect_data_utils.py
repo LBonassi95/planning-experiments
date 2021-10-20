@@ -4,6 +4,10 @@ import fcntl
 import os.path
 import subprocess
 
+import numpy as np
+
+VALUE_VALIDATOR_REGEX = 'Value: [^\n ]*'
+
 VALIDATED = "VALIDATED"
 
 NO_MATCH = '#NOMATCH#'
@@ -14,7 +18,8 @@ NO_SOLUTION = 'NO_SOLUTION'
 NO_VALIDATION_PERFORMED = 'NoValidationPerformed'
 VAL_COMMAND = 'validate -v {} {} {}'
 SUCCESSFUL_PLAN = 'Successful plans:'
-
+VALIDATOR_VALUE = "VALIDATOR_VALUE"
+PLAN_LENGHT = "PLAN_LENGTH"
 
 def get_data(args):
     system = args[1]
@@ -28,11 +33,14 @@ def get_data(args):
 
     if not os.path.exists(solution_file):
         solution_str = NO_SOLUTION
+        plan_length = np.nan
         val_res = NO_VALIDATION_PERFORMED
+        validator_value = np.nan
     else:
         with open(solution_file, 'r') as solution_read:
             solution_str = solution_read.read()
-        val_res = validate(val_info, solution_file)
+        plan_length = len(solution_str.strip().split('\n'))
+        val_res, validator_value = validate(val_info, solution_file)
 
     with open(stdo, 'r') as stdo_read:
         stdo_str = stdo_read.read()
@@ -40,7 +48,7 @@ def get_data(args):
     with open(stde, 'r') as stde_read:
         stde_str = stde_read.read()
 
-    return system, results_file, domain, instance, stdo_str, stde_str, solution_str, val_res
+    return system, results_file, domain, instance, stdo_str, stde_str, solution_str, plan_length, val_res, validator_value
 
 
 def validate(val_info, solution):
@@ -55,8 +63,14 @@ def validate(val_info, solution):
 
         stdout = (stdout.decode('ascii'))
         print(stdout)
-        val_res = str(SUCCESSFUL_PLAN in stdout)
-    return val_res
+        val_res = SUCCESSFUL_PLAN in stdout
+        if val_res:
+            match = find_regex(VALUE_VALIDATOR_REGEX, stdout[stdout.find(SUCCESSFUL_PLAN):])
+            assert len(match) == 1
+            validator_value = int(match[0].split(':')[1].strip())
+        else:
+            validator_value = np.nan
+    return str(val_res), validator_value
 
 
 def find_regex(regex, string):
@@ -80,11 +94,13 @@ def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs,
                 results_dict[dict_key] = match
 
 
-def save_domain_instance_system_validation(results_dict, system, domain, instance, validated):
+def save_domain_instance_system_validation(results_dict, system, domain, instance, validated, plan_length, validator_value):
     results_dict[INSTANCE] = instance
     results_dict[DOMAIN] = domain
     results_dict[SYSTEM] = system
     results_dict[VALIDATED] = validated
+    results_dict[VALIDATOR_VALUE] = validator_value
+    results_dict[PLAN_LENGHT] = plan_length
 
 
 def write_results(results_dict, results_file):
