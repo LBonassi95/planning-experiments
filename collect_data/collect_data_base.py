@@ -43,8 +43,26 @@ def clean_total_runtime(string):
     return float(string.split(':')[1].strip())
 
 
+def get_solution_function(solution_path):
+    with open(solution_path, 'r') as sol_in:
+        sol_str = sol_in.read()
+
+    splitted_sol = sol_str.split('\n')
+    new_plan_actions = [action.replace('__', ' ') for action in splitted_sol]
+    new_plan_actions = [a for a in new_plan_actions if 'o_copy' not in a and 'o_sync' not in a and 'o_world' not in a and 'o_goal' not in a]
+    lifted_sol = '\n'.join(new_plan_actions)
+
+    path_sol = os.path.dirname(solution_path)
+    name_sol = os.path.basename(solution_path)
+
+    lifted_path = os.path.join(path_sol, 'clean_{}'.format(name_sol))
+
+    with open(lifted_path, 'w') as fout:
+        fout.write(lifted_sol)
+
+
 def collect(argv):
-    data_array = get_data(argv)
+    data_array = get_data(argv, get_solution_function)
 
     for (system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name, validated, validator_value) in data_array:
         if solution_str == NO_SOLUTION:

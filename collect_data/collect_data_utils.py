@@ -23,7 +23,7 @@ SUCCESSFUL_PLAN = 'Successful plans:'
 VALIDATOR_VALUE = "VALIDATOR_VALUE"
 
 
-def get_data(args):
+def get_data(args, get_solution_function):
     system = args[1]
     results_file = args[2]
     solution_file = args[3]
@@ -60,8 +60,7 @@ def get_data(args):
         data_array = []
         solutions.sort()
         for sol_name in solutions:
-            with open(os.path.join(solution_directory, sol_name), 'r') as solution_read:
-                solution_str = solution_read.read()
+            solution_str = get_solution_function(os.path.join(solution_directory, sol_name))
             val_res, validator_value = validate(val_info, solution_file)
             data_array.append((system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name, val_res, validator_value))
         return data_array
@@ -118,6 +117,7 @@ def save_domain_instance_system_validation(results_dict, system, domain, instanc
     results_dict[SOLUTION] = sol_name
     results_dict[VALIDATED] = validated
     results_dict[VALIDATOR_VALUE] = validator_value
+
 
 def write_results(results_dict, results_file):
     string = json.dumps(results_dict)
