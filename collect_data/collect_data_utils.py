@@ -6,6 +6,8 @@ import subprocess
 
 import numpy as np
 
+SOLUTION = 'SOLUTION'
+
 VALUE_VALIDATOR_REGEX = 'Value: [^\n ]*'
 
 VALIDATED = "VALIDATED"
@@ -20,6 +22,7 @@ VAL_COMMAND = 'validate -v {} {} {}'
 SUCCESSFUL_PLAN = 'Successful plans:'
 VALIDATOR_VALUE = "VALIDATOR_VALUE"
 
+
 def get_data(args):
     system = args[1]
     results_file = args[2]
@@ -30,27 +33,44 @@ def get_data(args):
     stde = args[7]
     val_info = args[8]
 
-    if not os.path.exists(solution_file):
-        solution_str = NO_SOLUTION
-        val_res = NO_VALIDATION_PERFORMED
-        validator_value = np.nan
-    else:
-        with open(solution_file, 'r') as solution_read:
-            solution_str = solution_read.read()
-        val_res, validator_value = validate(val_info, solution_file)
-
+    ########################## STDO AND STDE ##########################
+    ###################################################################
     with open(stdo, 'r') as stdo_read:
         stdo_str = stdo_read.read()
 
     with open(stde, 'r') as stde_read:
         stde_str = stde_read.read()
+    ###################################################################
+    ###################################################################
 
-    return system, results_file, domain, instance, stdo_str, stde_str, solution_str, val_res, validator_value
+    solution_basename = os.path.basename(solution_file)
+    solution_directory = os.path.dirname(solution_file)
+
+    solutions = []
+    for file in os.listdir(solution_directory):
+        if solution_basename in file:
+            solutions.append(file)
+
+    if len(solutions) == 0:
+        solution_str = NO_SOLUTION
+        val_res = NO_VALIDATION_PERFORMED
+        validator_value = np.nan
+        return [(system, results_file, domain, instance, stdo_str, stde_str, solution_str, val_res, validator_value)]
+    else:
+        data_array = []
+        solutions.sort()
+        for sol_name in solutions:
+            with open(os.path.join(solution_directory, sol_name), 'r') as solution_read:
+                solution_str = solution_read.read()
+            val_res, validator_value = validate(val_info, solution_file)
+            data_array.append((system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name, val_res, validator_value))
+        return data_array
 
 
 def validate(val_info, solution):
     if val_info == NO_VALIDATION_PERFORMED:
         val_res = NO_VALIDATION_PERFORMED
+        validator_value = np.nan
     else:
         domain4val = val_info.split('#')[0]
         instance4val = val_info.split('#')[1]
@@ -76,7 +96,7 @@ def find_regex(regex, string):
 
 
 def manage_no_solution(instance, domain, system):
-    return {INSTANCE: instance, DOMAIN: domain, SYSTEM: system, 'SOLUTION': 'NO SOLUTION'}
+    return {INSTANCE: instance, DOMAIN: domain, SYSTEM: system, SOLUTION: 'NO SOLUTION'}
 
 
 def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs, cleanup_function=None):
@@ -91,10 +111,11 @@ def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs,
                 results_dict[dict_key] = match
 
 
-def save_domain_instance_system_validation(results_dict, system, domain, instance, validated, validator_value):
+def save_domain_instance_system_validation(results_dict, system, domain, instance, sol_name, validated, validator_value):
     results_dict[INSTANCE] = instance
     results_dict[DOMAIN] = domain
     results_dict[SYSTEM] = system
+    results_dict[SOLUTION] = sol_name
     results_dict[VALIDATED] = validated
     results_dict[VALIDATOR_VALUE] = validator_value
 
