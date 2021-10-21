@@ -44,6 +44,9 @@ def clean_total_runtime(string):
 
 
 def get_solution_function(solution_path):
+    if not os.path.exists(solution_path):
+        return []
+
     with open(solution_path, 'r') as sol_in:
         sol_str = sol_in.read()
 
@@ -60,28 +63,30 @@ def get_solution_function(solution_path):
     with open(lifted_path, 'w') as fout:
         fout.write(lifted_sol)
 
+    return [(name_sol, lifted_sol, solution_path)]
+
 
 def collect(argv):
     data_array = get_data(argv, get_solution_function)
+    assert len(data_array) == 1
+    (system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name, validated, validator_value) = data_array[0]
+    if solution_str == NO_SOLUTION:
+        results_dict = manage_no_solution(instance, domain, system)
+        find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
+    else:
+        results_dict = {}
 
-    for (system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name, validated, validator_value) in data_array:
-        if solution_str == NO_SOLUTION:
-            results_dict = manage_no_solution(instance, domain, system)
-            find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
-        else:
-            results_dict = {}
+        save_domain_instance_system_validation(results_dict, system, domain, instance, sol_name, validated, validator_value)
 
-            save_domain_instance_system_validation(results_dict, system, domain, instance, sol_name, validated, validator_value)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)
+        find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, STEPS_PARIS, cleanup_function=clean_fd)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, SEARCH_TIME_PAIRS,
+                                              cleanup_function=clean_fd_search_time)
+        find_and_save_from_regex_single_match(results_dict, stdo_str, MEMORY_ERROR, cleanup_function=memory_error)
 
-            find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
-            find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)
-            find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
-            find_and_save_from_regex_single_match(results_dict, stdo_str, STEPS_PARIS, cleanup_function=clean_fd)
-            find_and_save_from_regex_single_match(results_dict, stdo_str, SEARCH_TIME_PAIRS,
-                                                  cleanup_function=clean_fd_search_time)
-            find_and_save_from_regex_single_match(results_dict, stdo_str, MEMORY_ERROR, cleanup_function=memory_error)
-
-        write_results(results_dict, results_file)
+    write_results(results_dict, results_file)
 
 
 if __name__ == '__main__':

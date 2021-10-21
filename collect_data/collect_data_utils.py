@@ -3,6 +3,7 @@ import json
 import fcntl
 import os.path
 import subprocess
+from pathlib import Path
 
 import numpy as np
 
@@ -42,27 +43,20 @@ def get_data(args, get_solution_function):
         stde_str = stde_read.read()
     ###################################################################
     ###################################################################
-
-    solution_basename = os.path.basename(solution_file)
-    solution_directory = os.path.dirname(solution_file)
-
-    solutions = []
-    for file in os.listdir(solution_directory):
-        if solution_basename in file:
-            solutions.append(file)
+    solutions = get_solution_function(solution_file)
 
     if len(solutions) == 0:
         solution_str = NO_SOLUTION
         val_res = NO_VALIDATION_PERFORMED
         validator_value = np.nan
-        return [(system, results_file, domain, instance, stdo_str, stde_str, solution_str, val_res, validator_value)]
+        return [(system, results_file, domain, instance, stdo_str, stde_str, solution_str, NO_SOLUTION, val_res,
+                 validator_value)]
     else:
         data_array = []
-        solutions.sort()
-        for sol_name in solutions:
-            solution_str = get_solution_function(os.path.join(solution_directory, sol_name))
-            val_res, validator_value = validate(val_info, solution_file)
-            data_array.append((system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name, val_res, validator_value))
+        for sol_name, solution_str, sol_path in solutions:
+            val_res, validator_value = validate(val_info, sol_path)
+            data_array.append((system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name,
+                               val_res, validator_value))
         return data_array
 
 
@@ -104,13 +98,25 @@ def find_and_save_from_regex_single_match(results_dict, string, regex_key_pairs,
         if len(match) > 0:
             assert len(match) == 1
             if cleanup_function is None:
-                results_dict[dict_key] = match
+                results_dict[dict_key] = match[0]
             else:
                 match = cleanup_function(match[0])
                 results_dict[dict_key] = match
 
 
-def save_domain_instance_system_validation(results_dict, system, domain, instance, sol_name, validated, validator_value):
+def find_and_save_from_regex(results_dict, string, regex_key_pairs, n_match, cleanup_function=None):
+    for regex, dict_key in regex_key_pairs:
+        match = find_regex(regex, string)
+        if len(match) > 0:
+            if cleanup_function is None:
+                results_dict[dict_key] = match[n_match]
+            else:
+                match = cleanup_function(match[n_match])
+                results_dict[dict_key] = match
+
+
+def save_domain_instance_system_validation(results_dict, system, domain, instance, sol_name, validated,
+                                           validator_value):
     results_dict[INSTANCE] = instance
     results_dict[DOMAIN] = domain
     results_dict[SYSTEM] = system
@@ -135,3 +141,4 @@ def system_call(command):
         stderr=subprocess.PIPE,
         shell=True)
     return p.stdout.read(), p.stderr.read()
+
