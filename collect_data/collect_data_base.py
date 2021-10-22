@@ -63,7 +63,7 @@ def get_solution_function(solution_path):
     with open(lifted_path, 'w') as fout:
         fout.write(lifted_sol)
 
-    return [(name_sol, lifted_sol, solution_path)]
+    return [(name_sol, lifted_sol, lifted_path)]
 
 
 def collect(argv):
