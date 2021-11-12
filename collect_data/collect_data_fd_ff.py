@@ -12,6 +12,8 @@ INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-PCC-TCORE-RUNTIME'),
               ('DONE-ACTION-ADDED-IN: [^\n ]*', 'DONE-ACTION-RUNTIME'),
               ('PCC-RUNTIME: [^\n ]*', 'PCC-RUNTIME')]
 
+FD_PREPROCESSOR_PAIRS = [('Done! [^\n]*', 'FD_PREPROCESSOR_RUNTIME')]
+
 STEPS_PARIS = [('Plan length: [^\n ]*', 'FD_PLAN_STEPS')]
 
 STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME')]
@@ -29,6 +31,11 @@ def memory_error(string):
 
 def clean_overhead(string):
     return float(string.split(':')[1].strip())
+
+
+def clean_fd_preprocessing_time(string):
+    # Done! [0.030s CPU, 0.032s wall-clock]
+    return float(string.split(',')[1].split('s')[0].strip())
 
 
 def clean_fd_search_time(string):
@@ -58,7 +65,8 @@ def get_solution_function(solution_path):
             solutions.append(file)
 
     solution_tuples = []
-    solutions.sort(key=sort_fd_sol)
+    if len(solutions) > 1:
+        solutions.sort(key=sort_fd_sol)
     for solution in solutions:
         with open(os.path.join(path_sol, solution), 'r') as sol_in:
             sol_str = sol_in.read()
@@ -93,6 +101,8 @@ def collect(argv):
             find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
             find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)
             find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
+            find_and_save_from_regex_single_match(results_dict, stdo_str, FD_PREPROCESSOR_PAIRS,
+                                                  cleanup_function=clean_fd_preprocessing_time)
             find_and_save_from_regex(results_dict, stdo_str, STEPS_PARIS, n, cleanup_function=clean_fd)
             find_and_save_from_regex(results_dict, stdo_str, SEARCH_TIME_PAIRS, n, cleanup_function=clean_fd_search_time)
             find_and_save_from_regex_single_match(results_dict, stdo_str, MEMORY_ERROR, cleanup_function=memory_error)
