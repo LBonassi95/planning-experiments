@@ -12,6 +12,8 @@ INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-PCC-TCORE-RUNTIME'),
               ('DONE-ACTION-ADDED-IN: [^\n ]*', 'DONE-ACTION-RUNTIME'),
               ('PCC-RUNTIME: [^\n ]*', 'PCC-RUNTIME')]
 
+LTLexpINFO = [('Total No. of states = [^\n]*', 'LTL_EXP_STATES')]
+
 FD_PREPROCESSOR_PAIRS = [('Done! [^\n]*', 'FD_PREPROCESSOR_RUNTIME')]
 
 STEPS_PARIS = [('Plan length: [^\n ]*', 'FD_PLAN_STEPS')]
@@ -48,6 +50,10 @@ def clean_fd(string):
 
 def clean_total_runtime(string):
     return float(string.split(':')[1].strip())
+
+
+def clean_ltlexp_states(string):
+    return float(string.split('=')[1].strip())
 
 
 def sort_fd_sol(sol_name):
@@ -101,6 +107,7 @@ def collect(argv):
             find_and_save_from_regex_single_match(results_dict, stdo_str, OVERHEAD_PAIRS, cleanup_function=clean_overhead)
             find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)
             find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
+            find_and_save_from_regex_single_match(results_dict, stdo_str, LTLexpINFO, cleanup_function=clean_ltlexp_states)
             find_and_save_from_regex_single_match(results_dict, stdo_str, FD_PREPROCESSOR_PAIRS,
                                                   cleanup_function=clean_fd_preprocessing_time)
             find_and_save_from_regex(results_dict, stdo_str, STEPS_PARIS, n, cleanup_function=clean_fd)
