@@ -14,13 +14,15 @@ INFO_PAIRS = [('TOTAL-COMPILATION-RUNTIME: [^\n ]*', 'TOTAL-PCC-TCORE-RUNTIME'),
 
 LTLexpINFO = [('Total No. of states = [^\n]*', 'LTL_EXP_STATES')]
 
+LTLexpCOMP_TIME = [('CPU time: [^\n]*', 'LTL_EXP_COMP_TIME')]
+
 FD_PREPROCESSOR_PAIRS = [('Done! [^\n]*', 'FD_PREPROCESSOR_RUNTIME')]
 
 STEPS_PARIS = [('Plan length: [^\n ]*', 'FD_PLAN_STEPS')]
 
-STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME')]
+STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME'), ('Compilation Time: [^\n ]*', 'COMPILATION_TIME')]
 
-SEARCH_TIME_PAIRS = [('Solution found!\nActual search time: [^\n ]*', 'LAMA_RUNTIME')]
+SEARCH_TIME_PAIRS = [('Solution found!\nActual search time: [^\n ]*', 'FD_SEARCH_TIME')]
 
 MEMORY_ERROR = [('MemoryError', 'MEMORY-ERROR')]
 
@@ -54,6 +56,11 @@ def clean_total_runtime(string):
 
 def clean_ltlexp_states(string):
     return float(string.split('=')[1].strip())
+
+
+def clean_ltlexp_comp_time(string):
+    # CPU time: 0.797829657, Number of Inferences: 3502958
+    return float(string.split(',')[0].split(':')[1].strip())
 
 
 def sort_fd_sol(sol_name):
@@ -108,6 +115,7 @@ def collect(argv):
             find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)
             find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
             find_and_save_from_regex_single_match(results_dict, stdo_str, LTLexpINFO, cleanup_function=clean_ltlexp_states)
+            find_and_save_from_regex_single_match(results_dict, stdo_str, LTLexpCOMP_TIME, cleanup_function=clean_ltlexp_comp_time)
             find_and_save_from_regex_single_match(results_dict, stdo_str, FD_PREPROCESSOR_PAIRS,
                                                   cleanup_function=clean_fd_preprocessing_time)
             find_and_save_from_regex(results_dict, stdo_str, STEPS_PARIS, n, cleanup_function=clean_fd)
