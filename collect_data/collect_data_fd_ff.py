@@ -24,6 +24,8 @@ STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME'), ('Compilation Time: [^
 
 SEARCH_TIME_PAIRS = [('Solution found!\nActual search time: [^\n ]*', 'FD_SEARCH_TIME')]
 
+STATE_INFO_PAIRS = [('Expanded [^\n ]*', 'FD_EXPANDED_NODES')]
+
 MEMORY_ERROR = [('MemoryError', 'MEMORY-ERROR')]
 
 
@@ -44,6 +46,11 @@ def clean_fd_preprocessing_time(string):
 
 def clean_fd_search_time(string):
     return float(string.split(':')[1].split('s')[0].strip())
+
+
+def clean_fd_state_info(string):
+    # Expanded 14 state(s).
+    return int(string.replace('Expanded', '').replace('state(s).', ''))
 
 
 def clean_fd(string):
@@ -120,6 +127,8 @@ def collect(argv):
                                                   cleanup_function=clean_fd_preprocessing_time)
             find_and_save_from_regex(results_dict, stdo_str, STEPS_PARIS, n, cleanup_function=clean_fd)
             find_and_save_from_regex(results_dict, stdo_str, SEARCH_TIME_PAIRS, n, cleanup_function=clean_fd_search_time)
+            find_and_save_from_regex(results_dict, stdo_str, STATE_INFO_PAIRS, n,
+                                     cleanup_function=clean_fd_state_info)
             find_and_save_from_regex_single_match(results_dict, stdo_str, MEMORY_ERROR, cleanup_function=memory_error)
 
         write_results(results_dict, results_file)
