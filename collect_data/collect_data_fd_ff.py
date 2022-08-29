@@ -16,13 +16,16 @@ LTLexpINFO = [('Total No. of states = [^\n]*', 'LTL_EXP_STATES')]
 
 LTLexpCOMP_TIME = [('CPU time: [^\n]*', 'LTL_EXP_COMP_TIME')]
 
+LTLpolyCOMP_TIME_1 = [('Translation CPU time: [^\n]*', 'LTL_POLY_COMP_TIME_1')]
+LTLpolyCOMP_TIME_2 = [('ToPddl CPU time: [^\n]*', 'LTL_POLY_COMP_TIME_2')]
+
 FD_PREPROCESSOR_PAIRS = [('Done! [^\n]*', 'FD_PREPROCESSOR_RUNTIME')]
 
 STEPS_PARIS = [('Plan length: [^\n ]*', 'FD_PLAN_STEPS')]
 
-STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME'), ('Compilation Time: [^\n ]*', 'COMPILATION_TIME')]
+STDE_PAIRS = [('Total Runtime: [^\n ]*', 'TOTALRUNTIME'), ('Compilation Time: [^\n ]*', 'COMPILATION_TIME'), ('Total FD Time: [^\n ]*', 'TOTAL_FD_TIME')]
 
-SEARCH_TIME_PAIRS = [('Solution found!\nActual search time: [^\n ]*', 'FD_SEARCH_TIME')]
+SEARCH_TIME_PAIRS = [('Total time: [^\n]*', 'FD_SEARCH_TIME')]
 
 STATE_INFO_PAIRS = [('Expanded [^\n ]*', 'FD_EXPANDED_NODES')]
 
@@ -93,7 +96,7 @@ def get_solution_function(solution_path):
 
         splitted_sol = sol_str.split('\n')
         new_plan_actions = [action.replace('__', ' ') for action in splitted_sol]
-        new_plan_actions = [a for a in new_plan_actions if 'o_copy' not in a and 'o_sync' not in a and 'o_world' not in a and 'o_goal' not in a]
+        new_plan_actions = [a for a in new_plan_actions if 'o_copy' not in a and 'o_sync' not in a and 'o_world' not in a and 'o_goal' not in a and 'achieve-goal' not in a and 'sync' not in a and 'reach-goal' not in a]
         str_sol = '\n'.join(new_plan_actions)
 
         clean_path = os.path.join(path_sol, 'clean_{}'.format(solution))
@@ -113,6 +116,11 @@ def collect(argv):
         if solution_str == NO_SOLUTION:
             results_dict = manage_no_solution(instance, domain, system)
             find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
+            if 'ltlexp' in system:
+                find_and_save_from_regex_single_match(results_dict, stdo_str, LTLexpCOMP_TIME, cleanup_function=clean_ltlexp_comp_time)
+            if 'ltlpoly' in system:
+                find_and_save_from_regex_single_match(results_dict, stdo_str, LTLpolyCOMP_TIME_1, cleanup_function=clean_ltlexp_comp_time)
+                find_and_save_from_regex_single_match(results_dict, stdo_str, LTLpolyCOMP_TIME_2, cleanup_function=clean_ltlexp_comp_time)
         else:
             results_dict = {}
 
@@ -122,7 +130,11 @@ def collect(argv):
             find_and_save_from_regex_single_match(results_dict, stdo_str, INFO_PAIRS, cleanup_function=clean_overhead)
             find_and_save_from_regex_single_match(results_dict, stde_str, STDE_PAIRS, cleanup_function=clean_total_runtime)
             find_and_save_from_regex_single_match(results_dict, stdo_str, LTLexpINFO, cleanup_function=clean_ltlexp_states)
-            find_and_save_from_regex_single_match(results_dict, stdo_str, LTLexpCOMP_TIME, cleanup_function=clean_ltlexp_comp_time)
+            if 'ltlexp' in system:
+                find_and_save_from_regex_single_match(results_dict, stdo_str, LTLexpCOMP_TIME, cleanup_function=clean_ltlexp_comp_time)
+            if 'ltlpoly' in system:
+                find_and_save_from_regex_single_match(results_dict, stdo_str, LTLpolyCOMP_TIME_1, cleanup_function=clean_ltlexp_comp_time)
+                find_and_save_from_regex_single_match(results_dict, stdo_str, LTLpolyCOMP_TIME_2, cleanup_function=clean_ltlexp_comp_time)
             find_and_save_from_regex_single_match(results_dict, stdo_str, FD_PREPROCESSOR_PAIRS,
                                                   cleanup_function=clean_fd_preprocessing_time)
             find_and_save_from_regex(results_dict, stdo_str, STEPS_PARIS, n, cleanup_function=clean_fd)

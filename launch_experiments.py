@@ -27,8 +27,15 @@ def collect_instances(path_to_domains, domain):
         if len(pddl_domains) == 1:
             pairs.append((pddl_domains[0], pddl_instances[i]))
         else:
-            test_soundness = pddl_domains[i].split('-')[1]
-            assert test_soundness == pddl_instances[i]
+            assert '-' in pddl_domains[i] or '_' in pddl_domains[i]
+            if '-' in pddl_domains[i]:
+            	sep = '-'
+            elif '_' in pddl_domains[i]:
+            	sep = '_'
+            else:
+            	assert False, 'ABORTING!'
+            test_soundness = pddl_domains[i].split(sep)[1]
+            #assert test_soundness == pddl_instances[i]
             pairs.append((pddl_domains[i], pddl_instances[i]))
     return pairs
 
