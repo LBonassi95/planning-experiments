@@ -7,11 +7,10 @@ import datetime
 import click
 from planning_experiments import constants
 from planning_experiments.constants import *
-from planning_experiments.experiment_environment import ExperimentEnviorment
+from planning_experiments.experiment_environment import Domain, ExperimentEnviorment
 
 
-def collect_instances(path_to_domains, domain):
-    instances_path = path.join(path_to_domains, domain)
+def collect_instances(instances_path):
     pddl_domains = []
     pddl_instances = []
     for file in os.listdir(instances_path):
@@ -42,30 +41,20 @@ def collect_instances(path_to_domains, domain):
     return pairs
 
 
-def collect_runs(run_dict, path_to_domains):
-    for planner in run_dict.keys():
-        compiler = run_dict[planner][COMPILER]  # Ignored for now
-        domains = run_dict[planner][DOMAINS]
-        run_dict[planner][RUNS] = {}
-        for domain in domains:
-            runs = collect_instances(path_to_domains, domain)
-            run_dict[planner][RUNS][domain] = runs
-
-
 def scripts_setup(name):
     # Clean old scripts with the same name
     script_folder = path.join(SCRIPTS_FOLDER, name)
     if path.isdir(script_folder):
         os.system(RM_CMD.format(script_folder))
     #######################################
-    os.mkdir(script_folder)
+    os.makedirs(script_folder)
     return script_folder
 
 
-def create_results_folder(name, exp_id, planner, config, domain, results_file):
-    top_level_folder = path.join(RESULTS_FOLDER, name)
+def create_results_folder(env: ExperimentEnviorment, exp_id: str, planner: str, config: str, domain: str, results_file: str):
+    top_level_folder = path.join(env.result_folder, env.name)
     if not path.isdir(top_level_folder):
-        os.mkdir(top_level_folder)
+        os.makedirs(top_level_folder)
 
     results_folder = path.join(
         top_level_folder, EXPERIMENT_RUN_FOLDER.format(exp_id))
@@ -108,40 +97,30 @@ def write_script(shell_script, script_name, script_dst):
         output_writer.write(shell_script)
 
 
-def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains, short_name):
+def create_scripts(environment: ExperimentEnviorment, exp_id: str, short_name: str):
     script_list = []
-    script_folder = scripts_setup(name)
+    script_folder = scripts_setup(environment.name)
 
     results_file = path.join(path.join(
-        RESULTS_FOLDER, name), EXPERIMENT_RUN_FOLDER.format(exp_id), 'results.txt')
+        environment.result_folder, environment.name), EXPERIMENT_RUN_FOLDER.format(exp_id), 'results.txt')
 
-    for planner in run_dict.keys():
-
-        cfg_path = path.join(PLANNERS_FOLDER, planner, CFG_MAP_PLANNER)
-        if not path.isfile(cfg_path):
-            raise Exception(CFG_PLANNER_ERROR1.format(planner))
-        cfg_map = json.load(open(cfg_path,))
-
-        for config in run_dict[planner][CONFIGS]:
-            for domain in run_dict[planner][RUNS].keys():
+    for planner in environment.run_dictionary.keys():
+        for config in environment.run_dictionary[planner][CONFIGS]:
+            for domain in environment.run_dictionary[planner][DOMAINS]:
+                assert isinstance(domain, Domain)
                 solution_folder = create_results_folder(
-                    name, exp_id, planner, config, domain, results_file)
-                for pddl_domain, pddl_instance in run_dict[planner][RUNS][domain]:
+                    environment, exp_id, planner, config, domain.name, results_file)
+                    
+                for pddl_domain, pddl_instance in collect_instances(domain.path):
 
                     instance_name = pddl_instance.replace(PDDL_EXTENSION, '')
                     solution_name = '{}_{}.sol'.format(domain, instance_name)
                     script_name = '{}_{}_{}_{}_{}.sh'.format(
-                        name, planner, config, domain, instance_name)
+                        environment.name, planner, config, domain.name, instance_name)
                     shell_script = SHELL_TEMPLATE
 
-                    if config not in cfg_map:
-                        raise Exception(
-                            CFG_PLANNER_ERROR2.format(config, planner))
-
-                    path_to_pddl_domain = path.join(
-                        path_to_domains, domain, pddl_domain)
-                    path_to_pddl_instance = path.join(
-                        path_to_domains, domain, pddl_instance)
+                    path_to_pddl_domain = path.join(domain.path, pddl_domain)
+                    path_to_pddl_instance = path.join(domain.path, pddl_instance)
 
                     command_template = cfg_map[config]
                     planner_exe = command_template.replace(PLANNER_EXE_DOMAIN, path_to_pddl_domain) \
@@ -266,18 +245,16 @@ class Executor:
         self.environment = environment
         self.short_name = short_name
 
-
-    def delete_old_planners(self):
-        for planner in self.environment.run_dictionary:
-            copies_folder = path.join(
-                self.environment.planners_folder, planner, PLANNER_COPIES_FOLDER)
-            if path.isdir(copies_folder):
-                os.system(RM_CMD.format(copies_folder))
+    # def delete_old_planners(self):
+    #     for planner in self.environment.run_dictionary:
+    #         copies_folder = path.join(
+    #             self.environment.systems_folder, PLANNER_COPIES_FOLDER)
+    #         if path.isdir(copies_folder):
+    #             os.system(RM_CMD.format(copies_folder))
 
     def run_experiments(self):
-        self.delete_old_planners()
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
-
+        script_list = create_scripts(self.environment, exp_id, self.short_name)
 
 if __name__ == '__main__':
     main()

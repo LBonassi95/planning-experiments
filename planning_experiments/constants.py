@@ -83,6 +83,5 @@ CFG_MAP_PLANNER = "cfg_map.json"
 PLANNERS_FOLDER = 'systems'
 SCRIPTS_FOLDER = 'scripts'
 LOG_FOLDER = 'logs'
-RESULTS_FOLDER = 'results'
 COLLECT_DATA_FOLDER = 'collect_data'
 COLLECT_DATA = "COLLECT"
