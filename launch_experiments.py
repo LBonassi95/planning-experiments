@@ -29,11 +29,11 @@ def collect_instances(path_to_domains, domain):
         else:
             assert '-' in pddl_domains[i] or '_' in pddl_domains[i]
             if '-' in pddl_domains[i]:
-            	sep = '-'
+                sep = '-'
             elif '_' in pddl_domains[i]:
-            	sep = '_'
+                sep = '_'
             else:
-            	assert False, 'ABORTING!'
+                assert False, 'ABORTING!'
             test_soundness = pddl_domains[i].split(sep)[1]
             #assert test_soundness == pddl_instances[i]
             pairs.append((pddl_domains[i], pddl_instances[i]))
@@ -65,11 +65,13 @@ def create_results_folder(name, exp_id, planner, config, domain, results_file):
     if not path.isdir(top_level_folder):
         os.mkdir(top_level_folder)
 
-    results_folder = path.join(top_level_folder, EXPERIMENT_RUN_FOLDER.format(exp_id))
+    results_folder = path.join(
+        top_level_folder, EXPERIMENT_RUN_FOLDER.format(exp_id))
     if not path.isdir(results_folder):
         os.mkdir(results_folder)
 
-    results_folder_planner = path.join(results_folder, '{}_{}'.format(planner, config))
+    results_folder_planner = path.join(
+        results_folder, '{}_{}'.format(planner, config))
     if not path.isdir(results_folder_planner):
         os.mkdir(results_folder_planner)
 
@@ -90,8 +92,10 @@ def manage_planner_copy(name, planner, config, domain, instance, exp_id, script_
                                  'copy_{name}_{planner}_{config}_{domain}_{instance}_{exp_id}'
                                  .format(name=name, planner=planner, config=config, domain=domain, instance=instance, exp_id=exp_id))
     planner_source = path.join(PLANNERS_FOLDER, planner, SOURCE_FOLDER)
-    script_str = script_str.replace(PLANNER_DESTINATION, path.abspath(copy_planner_dst))
-    script_str = script_str.replace(PLANNER_SOURCE, path.abspath(planner_source))
+    script_str = script_str.replace(
+        PLANNER_DESTINATION, path.abspath(copy_planner_dst))
+    script_str = script_str.replace(
+        PLANNER_SOURCE, path.abspath(planner_source))
 
     return script_str
 
@@ -106,7 +110,8 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains, short_
     script_list = []
     script_folder = scripts_setup(name)
 
-    results_file = path.join(path.join(RESULTS_FOLDER, name), EXPERIMENT_RUN_FOLDER.format(exp_id), 'results.txt')
+    results_file = path.join(path.join(
+        RESULTS_FOLDER, name), EXPERIMENT_RUN_FOLDER.format(exp_id), 'results.txt')
 
     for planner in run_dict.keys():
 
@@ -117,44 +122,60 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains, short_
 
         for config in run_dict[planner][CONFIGS]:
             for domain in run_dict[planner][RUNS].keys():
-                solution_folder = create_results_folder(name, exp_id, planner, config, domain, results_file)
+                solution_folder = create_results_folder(
+                    name, exp_id, planner, config, domain, results_file)
                 for pddl_domain, pddl_instance in run_dict[planner][RUNS][domain]:
 
                     instance_name = pddl_instance.replace(PDDL_EXTENSION, '')
                     solution_name = '{}_{}.sol'.format(domain, instance_name)
-                    script_name = '{}_{}_{}_{}_{}.sh'.format(name, planner, config, domain, instance_name)
+                    script_name = '{}_{}_{}_{}_{}.sh'.format(
+                        name, planner, config, domain, instance_name)
                     shell_script = SHELL_TEMPLATE
 
                     if config not in cfg_map:
-                        raise Exception(CFG_PLANNER_ERROR2.format(config, planner))
+                        raise Exception(
+                            CFG_PLANNER_ERROR2.format(config, planner))
 
-                    path_to_pddl_domain = path.join(path_to_domains, domain, pddl_domain)
-                    path_to_pddl_instance = path.join(path_to_domains, domain, pddl_instance)
+                    path_to_pddl_domain = path.join(
+                        path_to_domains, domain, pddl_domain)
+                    path_to_pddl_instance = path.join(
+                        path_to_domains, domain, pddl_instance)
 
                     command_template = cfg_map[config]
                     planner_exe = command_template.replace(PLANNER_EXE_DOMAIN, path_to_pddl_domain) \
                         .replace(PLANNER_EXE_INSTANCE, path_to_pddl_instance) \
                         .replace(PLANNER_EXE_SOLUTION, path.join(solution_folder, solution_name))
 
-                    stde = path.abspath(path.join(solution_folder, 'err_{}_{}.txt'.format(domain, instance_name)))
-                    stdo = path.abspath(path.join(solution_folder, 'out_{}_{}.txt'.format(domain, instance_name)))
+                    stde = path.abspath(
+                        path.join(solution_folder, 'err_{}_{}.txt'.format(domain, instance_name)))
+                    stdo = path.abspath(
+                        path.join(solution_folder, 'out_{}_{}.txt'.format(domain, instance_name)))
                     planner_exe += " 2>> {} 1>> {}".format(stde, stdo)
 
-                    shell_script = manage_planner_copy(name, planner, config, domain, instance_name, exp_id, shell_script)
-                    shell_script = shell_script.replace(MEMORY_SHELL, str(memory))
+                    shell_script = manage_planner_copy(
+                        name, planner, config, domain, instance_name, exp_id, shell_script)
+                    shell_script = shell_script.replace(
+                        MEMORY_SHELL, str(memory))
                     shell_script = shell_script.replace(TIME_SHELL, str(time))
-                    shell_script = shell_script.replace(PLANNER_EXE_SHELL, planner_exe)
+                    shell_script = shell_script.replace(
+                        PLANNER_EXE_SHELL, planner_exe)
 
-                    path_to_collect = path.abspath(path.join(COLLECT_DATA_FOLDER, run_dict[planner][COLLECT_DATA]))
-                    shell_script = shell_script.replace(SHELL_COLLECT_DATA, path_to_collect)
+                    path_to_collect = path.abspath(
+                        path.join(COLLECT_DATA_FOLDER, run_dict[planner][COLLECT_DATA]))
+                    shell_script = shell_script.replace(
+                        SHELL_COLLECT_DATA, path_to_collect)
 
                     if DOMAINS4VAL not in run_dict[planner].keys() or domain not in run_dict[planner][DOMAINS4VAL]:
                         val = NO_VALIDATION_PERFORMED
                     else:
-                        domain4val = run_dict[planner][DOMAINS4VAL].get(domain, NO_VALIDATION_PERFORMED)
-                        path_to_domain4val = path.join(path_to_domains, domain4val, pddl_domain)
-                        path_to_instance4val = path.join(path_to_domains, domain4val, pddl_instance)
-                        val = '{}#{}'.format(path_to_domain4val, path_to_instance4val)
+                        domain4val = run_dict[planner][DOMAINS4VAL].get(
+                            domain, NO_VALIDATION_PERFORMED)
+                        path_to_domain4val = path.join(
+                            path_to_domains, domain4val, pddl_domain)
+                        path_to_instance4val = path.join(
+                            path_to_domains, domain4val, pddl_instance)
+                        val = '{}#{}'.format(
+                            path_to_domain4val, path_to_instance4val)
 
                     shell_script = shell_script\
                         .replace(SHELL_SOL_FILE, path.join(solution_folder, solution_name))\
@@ -165,19 +186,21 @@ def create_scripts(name, exp_id, run_dict, memory, time, path_to_domains, short_
                         .replace(SHELL_SYSTEM, '{}_{}'.format(planner, config))\
                         .replace(SHELL_DOMAIN4VAL, val)
                     write_script(shell_script, script_name, script_folder)
-                    script_list.append((script_name.replace('.sh', ''), path.join(script_folder, script_name)))
+                    script_list.append((script_name.replace(
+                        '.sh', ''), path.join(script_folder, script_name)))
 
     return script_list
 
 
 def delete_old_planners(cfg_dict):
     for planner in cfg_dict.keys():
-        copies_folder = path.join(PLANNERS_FOLDER, planner, PLANNER_COPIES_FOLDER)
+        copies_folder = path.join(
+            PLANNERS_FOLDER, planner, PLANNER_COPIES_FOLDER)
         if path.isdir(copies_folder):
             os.system(RM_CMD.format(copies_folder))
 
 
-def execute_scripts(name, script_list, ppn, priority):
+def execute_scripts(name, script_list, ppn, priority, no_qsub):
     # Qsub logs setup
     log_dst = path.join(LOG_FOLDER, name)
     if path.isdir(log_dst):
@@ -185,45 +208,54 @@ def execute_scripts(name, script_list, ppn, priority):
     os.mkdir(log_dst)
     #################
 
-    for (script_name, script) in script_list:
-        qsub_cmd = QSUB_TEMPLATE
-        stdo = path.join(LOG_FOLDER, name, 'log_{}'.format(script_name))
-        stde = path.join(LOG_FOLDER, name, 'err_{}'.format(script_name))
-        qsub_cmd = qsub_cmd\
-            .replace(PPN_QSUB, str(ppn))\
-            .replace(PRIORITY_QSUB, str(priority))\
-            .replace(SCRIPT_QSUB, script)\
-            .replace(LOG_QSUB, stdo)\
-            .replace(ERR_QSUB, stde)
-        print(qsub_cmd)
-        os.system(qsub_cmd)
+    if no_qsub:
+        for (script_name, script) in script_list:
+            os.system(f'chmod +x {script}')
+            os.system(script)
+    else:
+        for (script_name, script) in script_list:
+            qsub_cmd = QSUB_TEMPLATE
+            stdo = path.join(LOG_FOLDER, name, 'log_{}'.format(script_name))
+            stde = path.join(LOG_FOLDER, name, 'err_{}'.format(script_name))
+            qsub_cmd = qsub_cmd\
+                .replace(PPN_QSUB, str(ppn))\
+                .replace(PRIORITY_QSUB, str(priority))\
+                .replace(SCRIPT_QSUB, script)\
+                .replace(LOG_QSUB, stdo)\
+                .replace(ERR_QSUB, stde)
+            print(qsub_cmd)
+            os.system(qsub_cmd)
 
 
 def copy_elaborate_data(exp_id, name):
-    results_folder = path.join(path.join(RESULTS_FOLDER, name), EXPERIMENT_RUN_FOLDER.format(exp_id))
+    results_folder = path.join(
+        path.join(RESULTS_FOLDER, name), EXPERIMENT_RUN_FOLDER.format(exp_id))
     os.system('cp ./elaborate_data.py {}'.format(results_folder))
 
 
 @click.command()
 @click.argument('cfg')
 @click.option('--short_name', '-n', default='')
-def main(cfg, short_name):
+@click.option('--no-qsub', is_flag=True)
+def main(cfg, short_name, no_qsub):
     cfg_dict = json.load(open(cfg, ))
     run_dict = cfg_dict[PLANNERS_X_DOMAINS]
     delete_old_planners(run_dict)
     name = cfg_dict[NAME]
-    exp_id = short_name + str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
+    exp_id = short_name + str(datetime.datetime.now()).replace(' ',
+                                                               '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
     path_to_domains = cfg_dict[PATH_TO_DOMAINS]
     memory = cfg_dict[MEMORY]
     time = cfg_dict[TIME]
 
     collect_runs(run_dict, path_to_domains)
 
-    script_list = create_scripts(name, exp_id, run_dict, memory, time, path_to_domains, short_name)
+    script_list = create_scripts(
+        name, exp_id, run_dict, memory, time, path_to_domains, short_name)
 
-    execute_scripts(name, script_list, cfg_dict[PPN], cfg_dict[PRIORITY])
+    execute_scripts(name, script_list, cfg_dict[PPN], cfg_dict[PRIORITY], no_qsub)
 
-    copy_elaborate_data(exp_id, name)
+    #copy_elaborate_data(exp_id, name)
 
 
 if __name__ == '__main__':

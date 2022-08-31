@@ -1,0 +1,28 @@
+{
+    "NAME": "TEST",
+    "PATH_TO_DOMAINS" : "/home/luigi/Desktop/projects_coding/ExperimentsArchitecture/pddl_bechmarks",
+    "PLANNERS_X_DOMAINS" : {
+  
+      "system1": {
+        "COMPILER": "None",
+        "DOMAINS": ["blocksworld"],
+        "CONFIGS": ["DEFAULT"],
+        "COLLECT": "collect_data_fd_ff.py",
+        "DOMAINS4VAL": {"blocksworld":  "blocksworld"}
+      },
+
+      "system2": {
+        "COMPILER": "None",
+        "DOMAINS": ["blocksworld"],
+        "CONFIGS": ["DEFAULT"],
+        "COLLECT": "collect_data_fd_ff.py",
+        "DOMAINS4VAL": {"blocksworld":  "blocksworld"}
+      }
+      
+    },
+    "MEMORY": 8000000,
+    "TIME": 1800,
+    "PRIORITY": 500,
+    "PPN": 2
+  }
+  

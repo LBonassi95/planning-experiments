@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 from collect_data_utils import *
 import os

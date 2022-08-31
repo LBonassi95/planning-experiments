@@ -1,0 +1,7 @@
+__pycache__
+scripts
+results
+logs
+.vscode
+#systems
+#pddl_benchmarks/

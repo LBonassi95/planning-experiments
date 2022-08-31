@@ -1,0 +1,3 @@
+{
+	"DEFAULT": "./launch.sh #DOMAIN# #INSTANCE# #SOLUTION#"
+}
