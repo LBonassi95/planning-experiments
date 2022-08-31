@@ -5,7 +5,9 @@ import sys
 import random
 import datetime
 import click
-from constants import *
+from planning_experiments import constants
+from planning_experiments.constants import *
+from planning_experiments.experiment_environment import ExperimentEnviorment
 
 
 def collect_instances(path_to_domains, domain):
@@ -256,6 +258,25 @@ def main(cfg, short_name, no_qsub):
     execute_scripts(name, script_list, cfg_dict[PPN], cfg_dict[PRIORITY], no_qsub)
 
     #copy_elaborate_data(exp_id, name)
+
+
+class Executor:
+
+    def __init__(self, environment: ExperimentEnviorment, short_name = '') -> None:
+        self.environment = environment
+        self.short_name = short_name
+
+
+    def delete_old_planners(self):
+        for planner in self.environment.run_dictionary:
+            copies_folder = path.join(
+                self.environment.planners_folder, planner, PLANNER_COPIES_FOLDER)
+            if path.isdir(copies_folder):
+                os.system(RM_CMD.format(copies_folder))
+
+    def run_experiments(self):
+        self.delete_old_planners()
+        exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
 
 
 if __name__ == '__main__':
