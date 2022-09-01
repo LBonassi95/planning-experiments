@@ -87,12 +87,9 @@ def write_script(shell_script, script_name, script_dst):
         output_writer.write(shell_script)
 
 
-def delete_old_planners(cfg_dict):
-    for planner in cfg_dict.keys():
-        copies_folder = path.join(
-            PLANNERS_FOLDER, planner, PLANNER_COPIES_FOLDER)
-        if path.isdir(copies_folder):
-            os.system(RM_CMD.format(copies_folder))
+def delete_old_folder(folder: str):
+    if path.isdir(folder):
+        os.system(RM_CMD.format(folder))
 
 
 "#COLLECT_DATA_SCRIPT# #SYSTEM# #RESULTS# #SOL_FILE# #SOL_INSTANCE# #SOL_DOMAIN# #STDO# #STDE# #DOMAIN4VAL#"

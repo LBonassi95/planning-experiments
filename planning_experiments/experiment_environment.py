@@ -1,3 +1,4 @@
+from ast import Raise
 from planning_experiments.constants import *
 
 DEFAULT_MEM = 8000000
@@ -25,14 +26,14 @@ class Configuration:
     
 
 class System:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, name: str) -> None:
+        self.name = name
 
-    def get_cmd(self, domain: str, instance: str, solution: str) -> str:
+    def get_cmd(self) -> list[str]:
         raise NotImplementedError
     
     def get_name(self) -> str:
-        raise NotImplementedError
+        raise self.name
     
     def get_path(self)-> str:
         raise NotImplementedError
@@ -42,6 +43,38 @@ class System:
     
     def __repr__(self) -> str:
         return self.get_name()
+    
+    def get_dependencies(self) -> list[str]:
+        raise NotImplementedError
+
+class Planner(System):
+
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+
+    def get_cmd(self, domain: str, instance: str, solution: str) -> list[str]:
+        return super().get_cmd()
+    
+    def get_dependencies(self) -> list[str]:
+        return [self.get_path()]
+
+# FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
+class Compiler(Planner):
+    def __init__(self, name: str, system: System) -> None:
+        super().__init__(name)
+        self.system = system
+
+    def get_cmd(self, domain: str, instance: str, solution: str) -> list[str]:
+        return super().get_cmd()
+
+    def get_name(self) -> str:
+        return f'{self.name}_{self.system.get_name()}'
+    
+    def get_dependencies(self) -> list[str]:
+        return [self.get_path()] + self.system.get_dependencies()
+
+    def make_shell_chain(self) -> str:
+        raise NotImplementedError
 
 class ExperimentEnviorment:
 
@@ -54,6 +87,13 @@ class ExperimentEnviorment:
         self.name = name
         self.memory = DEFAULT_MEM
         self.time = DEFAULT_TIME
+        self.delete_systems = True
+        self.clean_logs = True
+        self.clean_scripts = True
+        self.clean_systems = True
+        self.ppn = 2
+        self.priority = 500
+        self.qsub = True
 
     def add_run(self, system: System, domains: list[Domain]):
 
@@ -68,3 +108,24 @@ class ExperimentEnviorment:
     
     def set_time(self, time: int):
         self.time = time
+
+    def set_delete_systems(self, clean: bool):
+        self.delete_systems = clean
+    
+    def set_clean_systems(self, clean: bool):
+        self.clean_systems = clean
+    
+    def set_clean_scripts(self, clean: bool):
+        self.clean_scripts = clean
+
+    def set_clean_logs(self, clean: bool):
+        self.clean_logs = clean
+    
+    def set_ppn(self, ppn: int):
+        self.ppn = ppn
+    
+    def set_priority(self, priority: int):
+        self.priority = priority 
+    
+    def set_qsub(self, qsub: bool):
+        self.qsub = qsub

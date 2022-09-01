@@ -1,6 +1,6 @@
 from distutils.command.config import config
 import planning_experiments
-from planning_experiments.experiment_environment import ExperimentEnviorment, System, Domain, Configuration
+from planning_experiments.experiment_environment import ExperimentEnviorment, System, Domain, Planner, Compiler
 from planning_experiments.launch_experiments import Executor
 import click
 from os import path
@@ -10,10 +10,10 @@ BLOCKSWORLD_PATH = '/home/luigi/Desktop/projects_coding/ExperimentsArchitecture/
 SYSTEMS_PATH = '/home/luigi/Desktop/projects_coding/ExperimentsArchitecture/test/systems'
 
 
-class FDWrapper(System):
+class FDWrapper(Planner):
 
     def __init__(self, name: str, fd_path: str, alias: str = None, search_params: str = None) -> None:
-        super().__init__()
+        super().__init__(name)
         self.name = name
         self.fd_path = fd_path
         self.alias = alias
@@ -31,33 +31,48 @@ class FDWrapper(System):
 
     def get_cmd(self, domain, instance, solution):
         if self.alias is not None:
-            return f'./fast-downward.py --alias {self.alias} --plan-file {solution} {domain} {instance}'
+            return f'./fast-downward/fast-downward.py --alias {self.alias} --plan-file {solution} {domain} {instance}'
         else:
-            return f'./fast-downward.py --plan-file {solution} {domain} {instance} {self.search_params}'
+            return f'./fast-downward/fast-downward.py --plan-file {solution} {domain} {instance} {self.search_params}'
+
+
+class TcoreWrapper(Compiler):
+
+    def __init__(self, name: str, tcore_path: str, system: System) -> None:
+        super().__init__(name, system)
+        self.name = name
+        self.tcore_path = tcore_path
+
+    def get_path(self):
+        return self.tcore_path
+
+    def get_cmd(self, domain, instance, solution):
+        return [f'python ./tcore/tcore/launch_tcore.py {domain} {instance} .', self.system.get_cmd("compiled_dom.pddl", "compiled_prob.pddl", solution)]
+
 
 
 # @click.option('--short_name', '-n', default='')
 def main():
-    no_qsub = False
     fd_path = path.join(SYSTEMS_PATH, 'fast-downward')
+    tcore_path = path.join(SYSTEMS_PATH, 'tcore')
     experiments_folder = '/home/luigi/Desktop/projects_coding/ExperimentsArchitecture/test/FIRST_TEST'
 
     env = ExperimentEnviorment(experiments_folder, name='TEST')
 
     system1 = FDWrapper('lama_first', fd_path, alias='lama-first')
-    system2 = FDWrapper('astar_hmax', fd_path, search_params='--search "astar(hmax)"')
-    system3 = FDWrapper('astar_ff', fd_path, search_params='--search "astar(ff)"')
+    system2 = TcoreWrapper('tcore', tcore_path, system1)
 
     blocksworld_1 = Domain('blocksworld1', path.join(
         BLOCKSWORLD_PATH, 'blocksworld1'), path.join(BLOCKSWORLD_PATH, 'blocksworld1'))
     #blocksworld_2 = Domain('blocksworld2', path.join(BLOCKSWORLD_PATH, 'blocksworld2'))
 
-    for system in [system1]:
+    for system in [system1, system2]:
         env.add_run(system=system, domains=[blocksworld_1])
+
+    env.set_qsub(False)
 
     executor = Executor(env, short_name='')
     executor.run_experiments()
-
 
 if __name__ == "__main__":
     main()

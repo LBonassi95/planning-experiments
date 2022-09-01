@@ -1,10 +1,8 @@
-import json
 import os
 import os.path as path
 import sys
 import random
 import datetime
-import click
 from planning_experiments.constants import *
 from planning_experiments.experiment_environment import Domain, ExperimentEnviorment, System
 from planning_experiments.script_builder import ScriptBuilder
@@ -24,8 +22,16 @@ class Executor:
     def run_experiments(self):
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
         self.define_paths(exp_id)
+
+        if self.environment.clean_systems:
+            delete_old_folder(self.systems_tmp_folder)
+        if self.environment.clean_scripts:
+            delete_old_folder(path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER))
+        if self.environment.clean_logs:
+            delete_old_folder(self.log_folder)
+
         script_list = self.create_scripts(exp_id)
-        self.execute_scripts(script_list, 2, 500, True)
+        self.execute_scripts(script_list)
     
     def define_paths(self, exp_id):
         self.script_folder = path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER, self.environment.name, exp_id)
@@ -57,7 +63,8 @@ class Executor:
             path2solution = path.join(solution_folder, solution_name)
             stde = path.abspath(path.join(solution_folder, f'err_{domain.name}_{instance_name}.txt'))
             stdo = path.abspath(path.join(solution_folder, f'out_{domain.name}_{instance_name}.txt'))
-            planner_exe = planner.get_cmd(path2domain, path2instance, path2solution) + " 2>> {} 1>> {}".format(stde, stdo)
+            planner_exe = planner.get_cmd(path2domain, path2instance, path2solution)
+            
             copy_planner_dst, planner_source = manage_planner_copy(
                 self.systems_tmp_folder, self.environment.name, planner, domain, instance_name, exp_id)
 
@@ -70,37 +77,37 @@ class Executor:
 
             collect_data_cmd = get_collect_cmd(solution_name, solution_folder, domain.name, instance_name, stdo, stde, results_file, planner_name, val)
 
-            builder = ScriptBuilder(system_dst=path.abspath(copy_planner_dst),
-                                    system_src=path.abspath(planner_source),
+            builder = ScriptBuilder(self.environment, planner,
+                                    system_dst=path.abspath(copy_planner_dst),
                                     time=str(self.environment.time), memory=str(self.environment.memory),
-                                    system_exe=planner_exe, collect_data_cmd=collect_data_cmd)
+                                    system_exe=planner_exe, collect_data_cmd=collect_data_cmd, 
+                                    stdo=stdo, stde=stde)
             
             shell_script = builder.get_script()
             write_script(shell_script, script_name, self.script_folder)
             script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, script_name)))
 
     
-    def execute_scripts(self, script_list: list[str], ppn: int, priority: int, no_qsub: bool):
+    def execute_scripts(self, script_list: list[str]):
         # Qsub logs setup
-        if path.isdir(self.log_folder):
-            os.system(RM_CMD.format(self.log_folder))
         os.makedirs(self.log_folder)
         #################
 
-        if no_qsub:
-            for (script_name, script) in script_list:
-                os.system(f'chmod +x {script}')
-                os.system(script)
-        else:
+        if self.environment.qsub:
+
             for (script_name, script) in script_list:
                 qsub_cmd = QSUB_TEMPLATE
                 stdo = path.join(self.log_folder, 'log_{}'.format(script_name))
                 stde = path.join(self.log_folder, 'err_{}'.format(script_name))
                 qsub_cmd = qsub_cmd\
-                    .replace(PPN_QSUB, str(ppn))\
-                    .replace(PRIORITY_QSUB, str(priority))\
+                    .replace(PPN_QSUB, str(self.environment.ppn))\
+                    .replace(PRIORITY_QSUB, str(self.environment.priority))\
                     .replace(SCRIPT_QSUB, script)\
                     .replace(LOG_QSUB, stdo)\
                     .replace(ERR_QSUB, stde)
                 print(qsub_cmd)
                 os.system(qsub_cmd)
+        else:
+            for (script_name, script) in script_list:
+                os.system(f'chmod +x {script}')
+                os.system(script)

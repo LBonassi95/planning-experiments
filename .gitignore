@@ -8,3 +8,4 @@ logs
 *.egg-info
 test/systems
 test/FIRST_TEST
+build
