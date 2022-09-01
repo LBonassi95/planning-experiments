@@ -6,3 +6,5 @@ logs
 #systems
 #pddl_benchmarks/
 *.egg-info
+test/systems
+test/FIRST_TEST
