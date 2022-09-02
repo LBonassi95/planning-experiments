@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-from collect_data_utils import *
 import os
+from planning_experiments.collect_data.collect_data_utils import *
 
 OVERHEAD_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION-OVERHEAD'),
                   ('\[EFFECT-OVERHEAD\]: [^\n ]*', 'EFFECT-OVERHEAD'),
