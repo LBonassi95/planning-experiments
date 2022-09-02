@@ -3,6 +3,7 @@ from os import path
 from planning_experiments.constants import *
 from planning_experiments.experiment_environment import Configuration, System
 from typing import Tuple
+import pkg_resources
 
 
 def add_configutation(base_cmd: str, configuration: Configuration):
@@ -93,7 +94,7 @@ def delete_old_folder(folder: str):
         os.system(RM_CMD.format(folder))
 
 
-"#COLLECT_DATA_SCRIPT# #SYSTEM# #RESULTS# #SOL_FILE# #SOL_INSTANCE# #SOL_DOMAIN# #STDO# #STDE# #DOMAIN4VAL#"
+"python #COLLECT_DATA_SCRIPT# #SYSTEM# #RESULTS# #SOL_FILE# #SOL_INSTANCE# #SOL_DOMAIN# #STDO# #STDE# #DOMAIN4VAL#"
 def get_collect_cmd(solution_name: str,
                     solution_folder: str,
                     domain_name: str,
@@ -104,12 +105,11 @@ def get_collect_cmd(solution_name: str,
                     system_name: str,
                     val: str):
 
-    collect_data_path = path.abspath(
-        path.join(COLLECT_DATA_FOLDER, "collect_data.py"))
+    collect_data_path = pkg_resources.resource_filename(__name__, f'{COLLECT_DATA_FOLDER}/collect_data.py')
     results_file_path = path.abspath(results_file)
     solution_path = path.join(solution_folder, solution_name)
 
-    collect_data = [collect_data_path,
+    collect_data = ["python", collect_data_path,
                     system_name,
                     results_file_path,
                     solution_path,
