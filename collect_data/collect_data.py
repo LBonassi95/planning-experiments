@@ -2,7 +2,7 @@
 
 import sys
 import os
-from planning_experiments.collect_data.collect_data_utils import *
+from planning_experiments import *
 
 OVERHEAD_PAIRS = [('\[PRECONDITION-OVERHEAD\]: [^\n ]*', 'PRECONDITION-OVERHEAD'),
                   ('\[EFFECT-OVERHEAD\]: [^\n ]*', 'EFFECT-OVERHEAD'),
