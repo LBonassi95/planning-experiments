@@ -1,7 +1,7 @@
 import os
 from os import path
 from planning_experiments.constants import *
-from planning_experiments.experiment_environment import Configuration, System
+from planning_experiments.experiment_environment import Configuration, ExperimentEnviorment, System
 from typing import Tuple
 import pkg_resources
 
@@ -87,6 +87,7 @@ def write_script(shell_script, script_name, script_dst):
     script_path = path.join(script_dst, script_name)
     with open(script_path, 'w') as output_writer:
         output_writer.write(shell_script)
+    os.system(f'chmod +x {script_path}')
 
 
 def delete_old_folder(folder: str):
@@ -95,7 +96,8 @@ def delete_old_folder(folder: str):
 
 
 "python #COLLECT_DATA_SCRIPT# #SYSTEM# #RESULTS# #SOL_FILE# #SOL_INSTANCE# #SOL_DOMAIN# #STDO# #STDE# #DOMAIN4VAL#"
-def get_collect_cmd(solution_name: str,
+def get_collect_cmd(envronment: ExperimentEnviorment,
+                    solution_name: str,
                     solution_folder: str,
                     domain_name: str,
                     instance_name: str,
@@ -105,7 +107,7 @@ def get_collect_cmd(solution_name: str,
                     system_name: str,
                     val: str):
 
-    collect_data_path = pkg_resources.resource_filename(__name__, f'{COLLECT_DATA_FOLDER}/collect_data.py')
+    collect_data_path = envronment.collect_data
     results_file_path = path.abspath(results_file)
     solution_path = path.join(solution_folder, solution_name)
 

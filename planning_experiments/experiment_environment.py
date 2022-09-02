@@ -1,5 +1,6 @@
 from typing import List
 from planning_experiments.constants import *
+import pkg_resources
 
 DEFAULT_MEM = 8000000
 DEFAULT_TIME = 1800
@@ -100,6 +101,8 @@ class ExperimentEnviorment:
         self.ppn = 2
         self.priority = 500
         self.qsub = True
+        self.conda_env = None
+        self.collect_data = pkg_resources.resource_filename(__name__, f'../{COLLECT_DATA_FOLDER}/collect_data.py')
 
     def add_run(self, system: System, domains: List[Domain]):
 
@@ -135,3 +138,9 @@ class ExperimentEnviorment:
     
     def set_qsub(self, qsub: bool):
         self.qsub = qsub
+    
+    def set_conda_env(self, conda_env: str):
+        self.conda_env = conda_env
+    
+    def set_collect_data(self, collect_data: str):
+        self.collect_data = collect_data

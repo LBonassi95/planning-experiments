@@ -20,7 +20,7 @@ class Executor:
         self.systems_tmp_folder = None
         self.log_folder = None
     
-    def run_experiments(self):
+    def run_experiments(self, test_run: bool = False):
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
         self.define_paths(exp_id)
 
@@ -31,7 +31,7 @@ class Executor:
         if self.environment.clean_logs:
             delete_old_folder(self.log_folder)
 
-        script_list = self.create_scripts(exp_id)
+        script_list = self.create_scripts(exp_id, test_run)
         self.execute_scripts(script_list)
     
     def define_paths(self, exp_id):
@@ -40,21 +40,25 @@ class Executor:
         self.systems_tmp_folder = path.join(self.environment.experiments_folder, PLANNER_COPIES_FOLDER)
         self.log_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
     
-    def create_scripts(self, exp_id: str):
+    def create_scripts(self, exp_id: str, test_run: bool):
         script_list = []
         scripts_setup(self.script_folder)
 
         for planner in self.environment.run_dictionary.keys():
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
-                self._create_script(planner, domain, exp_id, script_list)
+                self._create_script(planner, domain, exp_id, script_list, test_run)
                 
         return script_list
   
-    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str]):
+    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], test_run: bool):
         planner_name = planner.get_name()
         solution_folder, results_file = create_results_folder(self.results_folder, exp_id, planner_name, domain.name)
         
-        for pddl_domain, pddl_instance in collect_instances(domain.path):
+        instances = collect_instances(domain.path)
+        if test_run:
+            instances = instances[:2]
+
+        for pddl_domain, pddl_instance in instances:
 
             instance_name = pddl_instance.replace(PDDL_EXTENSION, '')
             solution_name = f'{domain.name}_{instance_name}.sol'
@@ -76,17 +80,27 @@ class Executor:
                 path_to_instance4val = path.join(domain.validation_path, pddl_instance)
                 val = '{}#{}'.format(path_to_domain4val, path_to_instance4val)
 
-            collect_data_cmd = get_collect_cmd(solution_name, solution_folder, domain.name, instance_name, stdo, stde, results_file, planner_name, val)
+            collect_data_cmd = get_collect_cmd(self.environment, 
+                                                solution_name, 
+                                                solution_folder,
+                                                domain.name, 
+                                                instance_name, 
+                                                stdo, 
+                                                stde, 
+                                                results_file, 
+                                                planner_name, 
+                                                val)
 
             builder = ScriptBuilder(self.environment, planner,
                                     system_dst=path.abspath(copy_planner_dst),
                                     time=str(self.environment.time), memory=str(self.environment.memory),
                                     system_exe=planner_exe, collect_data_cmd=collect_data_cmd, 
-                                    stdo=stdo, stde=stde)
+                                    stdo=stdo, stde=stde, script_name=script_name, script_folder=self.script_folder)
             
-            shell_script = builder.get_script()
-            write_script(shell_script, script_name, self.script_folder)
-            script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, script_name)))
+            inner_script, outer_script = builder.get_script()
+            write_script(inner_script, script_name, self.script_folder)
+            write_script(outer_script, f'run_{script_name}', self.script_folder)
+            script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, f'run_{script_name}')))
 
     
     def execute_scripts(self, script_list: List[str]):
