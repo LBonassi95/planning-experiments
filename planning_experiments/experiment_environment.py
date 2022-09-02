@@ -1,4 +1,4 @@
-from ast import Raise
+from typing import List
 from planning_experiments.constants import *
 
 DEFAULT_MEM = 8000000
@@ -29,7 +29,7 @@ class System:
     def __init__(self, name: str) -> None:
         self.name = name
 
-    def get_cmd(self) -> list[str]:
+    def get_cmd(self) -> List[str]:
         raise NotImplementedError
     
     def get_name(self) -> str:
@@ -44,7 +44,7 @@ class System:
     def __repr__(self) -> str:
         return self.get_name()
     
-    def get_dependencies(self) -> list[str]:
+    def get_dependencies(self) -> List[str]:
         raise NotImplementedError
 
 class Planner(System):
@@ -52,10 +52,10 @@ class Planner(System):
     def __init__(self, name: str) -> None:
         super().__init__(name)
 
-    def get_cmd(self, domain: str, instance: str, solution: str) -> list[str]:
+    def get_cmd(self, domain: str, instance: str, solution: str) -> List[str]:
         return super().get_cmd()
     
-    def get_dependencies(self) -> list[str]:
+    def get_dependencies(self) -> List[str]:
         return [self.get_path()]
 
 # FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
@@ -64,7 +64,7 @@ class Compiler(Planner):
         super().__init__(name)
         self.system = system
 
-    def get_cmd(self, domain: str, instance: str, solution: str) -> list[str]:
+    def get_cmd(self, domain: str, instance: str, solution: str) -> List[str]:
         return super().get_cmd()
 
     def get_name(self) -> str:
@@ -73,7 +73,7 @@ class Compiler(Planner):
         else:
             return self.name
     
-    def get_dependencies(self) -> list[str]:
+    def get_dependencies(self) -> List[str]:
         if self.system is not None:
             return [self.get_path()] + self.system.get_dependencies()
         else:
@@ -101,7 +101,7 @@ class ExperimentEnviorment:
         self.priority = 500
         self.qsub = True
 
-    def add_run(self, system: System, domains: list[Domain]):
+    def add_run(self, system: System, domains: List[Domain]):
 
         if self.run_dictionary.get(system, None) != None:
             raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system))

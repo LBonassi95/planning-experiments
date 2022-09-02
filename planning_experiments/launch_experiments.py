@@ -7,6 +7,7 @@ from planning_experiments.constants import *
 from planning_experiments.experiment_environment import Domain, ExperimentEnviorment, System
 from planning_experiments.script_builder import ScriptBuilder
 from planning_experiments.utils import *
+from typing import List
 
 
 class Executor:
@@ -49,7 +50,7 @@ class Executor:
                 
         return script_list
   
-    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: list[str]):
+    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str]):
         planner_name = planner.get_name()
         solution_folder, results_file = create_results_folder(self.results_folder, exp_id, planner_name, domain.name)
         
@@ -88,7 +89,7 @@ class Executor:
             script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, script_name)))
 
     
-    def execute_scripts(self, script_list: list[str]):
+    def execute_scripts(self, script_list: List[str]):
         # Qsub logs setup
         os.makedirs(self.log_folder)
         #################

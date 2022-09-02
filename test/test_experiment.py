@@ -52,8 +52,8 @@ class TcoreWrapper(Compiler):
 
 class TcoreInfoWrapper(Compiler):
 
-    def __init__(self, name: str, tcore_path: str, system: System) -> None:
-        super().__init__(name, system)
+    def __init__(self, name: str, tcore_path: str) -> None:
+        super().__init__(name, None)
         self.name = name
         self.tcore_path = tcore_path
 
@@ -77,7 +77,7 @@ def main():
     env = ExperimentEnviorment(experiments_folder, name='TEST')
 
     #system1 = FDWrapper('lama_first', fd_path, alias='lama-first')
-    system2 = TcoreInfoWrapper('tcore', tcore_path, system=None)
+    system2 = TcoreInfoWrapper('tcore', tcore_path)
 
     blocksworld_1 = Domain('blocksworld1', path.join(
         BLOCKSWORLD_PATH, 'blocksworld1'), path.join(BLOCKSWORLD_PATH, 'blocksworld1'))
