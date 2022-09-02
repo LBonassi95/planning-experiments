@@ -60,7 +60,7 @@ class Planner(System):
 
 # FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
 class Compiler(Planner):
-    def __init__(self, name: str, system: System) -> None:
+    def __init__(self, name: str, system: System = None) -> None:
         super().__init__(name)
         self.system = system
 
@@ -68,11 +68,17 @@ class Compiler(Planner):
         return super().get_cmd()
 
     def get_name(self) -> str:
-        return f'{self.name}_{self.system.get_name()}'
+        if self.system is not None:
+            return f'{self.name}_{self.system.get_name()}'
+        else:
+            return self.name
     
     def get_dependencies(self) -> list[str]:
-        return [self.get_path()] + self.system.get_dependencies()
-
+        if self.system is not None:
+            return [self.get_path()] + self.system.get_dependencies()
+        else:
+            return [self.get_path()]
+        
     def make_shell_chain(self) -> str:
         raise NotImplementedError
 

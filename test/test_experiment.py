@@ -50,6 +50,23 @@ class TcoreWrapper(Compiler):
         return [f'python ./tcore/tcore/launch_tcore.py {domain} {instance} .', self.system.get_cmd("compiled_dom.pddl", "compiled_prob.pddl", solution)]
 
 
+class TcoreInfoWrapper(Compiler):
+
+    def __init__(self, name: str, tcore_path: str, system: System) -> None:
+        super().__init__(name, system)
+        self.name = name
+        self.tcore_path = tcore_path
+
+    def get_path(self):
+        return self.tcore_path
+
+    def get_cmd(self, domain, instance, solution):
+        solution_filename = path.basename(solution).replace(".sol", "")
+        solutions_dir = path.dirname(solution)
+        return [f'python ./tcore/tcore/launch_tcore.py {domain} {instance} .',
+                f'mv ./compiled_dom.pddl {path.join(solutions_dir, f"compiled_dom_{solution_filename}.pddl")}',
+                f'mv ./compiled_prob.pddl {path.join(solutions_dir, f"compiled_prob_{solution_filename}.pddl")}']
+
 
 # @click.option('--short_name', '-n', default='')
 def main():
@@ -59,14 +76,14 @@ def main():
 
     env = ExperimentEnviorment(experiments_folder, name='TEST')
 
-    system1 = FDWrapper('lama_first', fd_path, alias='lama-first')
-    system2 = TcoreWrapper('tcore', tcore_path, system1)
+    #system1 = FDWrapper('lama_first', fd_path, alias='lama-first')
+    system2 = TcoreInfoWrapper('tcore', tcore_path, system=None)
 
     blocksworld_1 = Domain('blocksworld1', path.join(
         BLOCKSWORLD_PATH, 'blocksworld1'), path.join(BLOCKSWORLD_PATH, 'blocksworld1'))
     #blocksworld_2 = Domain('blocksworld2', path.join(BLOCKSWORLD_PATH, 'blocksworld2'))
 
-    for system in [system1, system2]:
+    for system in [system2]:
         env.add_run(system=system, domains=[blocksworld_1])
 
     env.set_qsub(False)
