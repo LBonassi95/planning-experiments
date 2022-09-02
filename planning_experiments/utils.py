@@ -2,6 +2,7 @@ import os
 from os import path
 from planning_experiments.constants import *
 from planning_experiments.experiment_environment import Configuration, System
+from typing import Tuple
 
 
 def add_configutation(base_cmd: str, configuration: Configuration):
@@ -40,7 +41,7 @@ def create_results_folder(results_folder: str, exp_id: str, planner: str, domain
     return path.abspath(results_folder_planner_domain), results_file
 
 
-def manage_planner_copy(systems_tmp_folder: str, name: str, planner: System, domain: str, instance: str, exp_id: str) -> tuple[str, str]:
+def manage_planner_copy(systems_tmp_folder: str, name: str, planner: System, domain: str, instance: str, exp_id: str) -> Tuple[str, str]:
     if not path.isdir(systems_tmp_folder):
         os.makedirs(systems_tmp_folder)
     copy_planner_dst = path.join(systems_tmp_folder,
