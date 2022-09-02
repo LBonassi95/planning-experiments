@@ -34,9 +34,10 @@ class ScriptBuilder:
 
         self.script.append(f'cd {self.system_dst}')
         self.script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {exe_str}')
+        self.script.append(self.collect_data_cmd)
         if self.enviorment.delete_systems:
             self.script.append(f'rm -r -f {self.system_dst}')
-        self.script.append(self.collect_data_cmd)
+        
         return '\n'.join(self.script)
     
     def set_memory(self, memory: int):
