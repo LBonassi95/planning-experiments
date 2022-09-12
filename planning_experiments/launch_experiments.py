@@ -12,7 +12,7 @@ from typing import List
 
 class Executor:
 
-    def __init__(self, environment: ExperimentEnviorment, short_name = '') -> None:
+    def __init__(self, environment: ExperimentEnviorment, short_name: str = '') -> None:
         self.environment = environment
         self.short_name = short_name
         self.script_folder = None
