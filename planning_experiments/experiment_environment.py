@@ -34,7 +34,7 @@ class System:
         raise NotImplementedError
     
     def get_name(self) -> str:
-        raise self.name
+        return self.name
     
     def get_path(self)-> str:
         raise NotImplementedError

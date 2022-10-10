@@ -2,7 +2,6 @@ from planning_experiments.experiment_environment import Compiler
 from planning_experiments.experiment_environment import System
 
 
-
 class TcoreWrapper(Compiler):
 
     def __init__(self, name: str, tcore_path: str, system: System, optimized = False, simplify_goal = False) -> None:
@@ -21,4 +20,8 @@ class TcoreWrapper(Compiler):
             cmd += ' --optimized'
         if self.simplify_goal:
             cmd += ' --simplify-goal'
-        return [cmd, self.system.get_cmd("compiled_dom.pddl", "compiled_prob.pddl", solution)]
+        system_cmd = self.system.get_cmd("compiled_dom.pddl", "compiled_prob.pddl", solution)
+        if isinstance(system_cmd, list):
+            return [cmd] + system_cmd
+        else:
+            return [cmd, system_cmd]

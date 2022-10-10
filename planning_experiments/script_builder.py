@@ -43,7 +43,7 @@ class ScriptBuilder:
         
         exe_str = self.manage_complex_cmd()
         
-        if self.memory is not None:
+        if self.memory != 'None':
             self.inner_script.append(f'ulimit -v {self.memory}')
         
         self.inner_script.append(exe_str)
