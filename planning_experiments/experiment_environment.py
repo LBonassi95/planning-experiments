@@ -1,5 +1,7 @@
-from typing import List
+from typing import List, Tuple
+import os
 from planning_experiments.constants import *
+from planning_experiments.instances_collector import InstancesCollector
 import pkg_resources
 
 DEFAULT_MEM = 8000000
@@ -8,14 +10,16 @@ DEFAULT_TIME = 1800
 ERROR_SYSTEM_ALREADY_ADDED = "System {} was already added to ExperimentEnviorment"
 
 class Domain:
-    def __init__(self, name: str, path2pddl: str, validation_path: str = None) -> None:
+    def __init__(self, name: str, path2pddl: str, validation_path: str = None, instances_collector: InstancesCollector = None) -> None:
         self.name = name
         self.path = path2pddl
         self.validation_path = validation_path
+        if instances_collector is None:
+            instances_collector = InstancesCollector()
+        self.instances = instances_collector.collect_instances(self.path)
     
     def __repr__(self) -> str:
         return self.name
-
 
 class Configuration:
     def __init__(self, name: str, parameters: list) -> None:

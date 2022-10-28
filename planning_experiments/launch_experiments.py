@@ -54,7 +54,7 @@ class Executor:
         planner_name = planner.get_name()
         solution_folder, results_file = create_results_folder(self.results_folder, exp_id, planner_name, domain.name)
         
-        instances = collect_instances(domain.path)
+        instances = domain.instances
         if test_run:
             instances = instances[:2]
 
@@ -123,6 +123,8 @@ class Executor:
                 print(qsub_cmd)
                 os.system(qsub_cmd)
         else:
-            for (script_name, script) in script_list:
+            from tqdm import tqdm
+            for i in tqdm(range(len(script_list))):
+                script_name, script = script_list[i]
                 os.system(f'chmod +x {script}')
                 os.system(script)

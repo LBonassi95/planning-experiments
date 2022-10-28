@@ -4,7 +4,7 @@ import fcntl
 import os.path
 import subprocess
 from pathlib import Path
-
+from planning_experiments.constants import NO_VALIDATION_PERFORMED
 import numpy as np
 
 SOLUTION = 'SOLUTION'
@@ -18,7 +18,6 @@ INSTANCE = 'INSTANCE'
 DOMAIN = 'DOMAIN'
 SYSTEM = 'SYSTEM'
 NO_SOLUTION = 'NO_SOLUTION'
-NO_VALIDATION_PERFORMED = 'NoValidationPerformed'
 VAL_COMMAND = 'validate -v {} {} {}'
 SUCCESSFUL_PLAN = 'Successful plans:'
 VALIDATOR_VALUE = "VALIDATOR_VALUE"
@@ -122,7 +121,8 @@ def save_domain_instance_system_validation(results_dict, system, domain, instanc
     results_dict[SYSTEM] = system
     results_dict[SOLUTION] = sol_name
     results_dict[VALIDATED] = validated
-    results_dict[VALIDATOR_VALUE] = validator_value
+    if validated != NO_VALIDATION_PERFORMED:
+        results_dict[VALIDATOR_VALUE] = validator_value
 
 
 def write_results(results_dict, results_file):

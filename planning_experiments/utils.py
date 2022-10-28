@@ -50,38 +50,7 @@ def manage_planner_copy(systems_tmp_folder: str, name: str, planner: System, dom
                                  .format(name=name, planner=planner.get_name(), domain=domain, instance=instance, exp_id=exp_id))
     planner_source = path.join(planner.get_path())
     return copy_planner_dst, planner_source
-
-
-def collect_instances(instances_path):
-    pddl_domains = []
-    pddl_instances = []
-    for file in os.listdir(instances_path):
-        if PDDL_EXTENSION in file:
-            if DOMAIN_STR_CONST in file:
-                pddl_domains.append(file)
-            else:
-                pddl_instances.append(file)
-    if len(pddl_domains) != 1 and len(pddl_domains) != len(pddl_instances):
-        raise Exception(DOMAIN_INSTANCES_ERROR)
-    pddl_instances.sort()
-    pddl_domains.sort()
-    pairs = []
-    for i in range(len(pddl_instances)):
-        if len(pddl_domains) == 1:
-            pairs.append((pddl_domains[0], pddl_instances[i]))
-        else:
-            assert '-' in pddl_domains[i] or '_' in pddl_domains[i]
-            if '-' in pddl_domains[i]:
-                sep = '-'
-            elif '_' in pddl_domains[i]:
-                sep = '_'
-            else:
-                assert False, 'ABORTING!'
-            test_soundness = pddl_domains[i].split(sep)[1]
-            #assert test_soundness == pddl_instances[i]
-            pairs.append((pddl_domains[i], pddl_instances[i]))
-    return pairs
-
+    
 
 def write_script(shell_script, script_name, script_dst):
     script_path = path.join(script_dst, script_name)

@@ -96,17 +96,17 @@ def get_solution_function(solution_path):
         with open(os.path.join(path_sol, solution), 'r') as sol_in:
             sol_str = sol_in.read()
 
-        splitted_sol = sol_str.split('\n')
-        new_plan_actions = [action.replace('__', ' ') for action in splitted_sol]
-        new_plan_actions = [a for a in new_plan_actions if 'o_copy' not in a and 'o_sync' not in a and 'o_world' not in a and 'o_goal' not in a and 'achieve-goal' not in a and 'sync' not in a and 'reach-goal' not in a]
-        str_sol = '\n'.join(new_plan_actions)
+        # splitted_sol = sol_str.split('\n')
+        # new_plan_actions = [action.replace('__', ' ') for action in splitted_sol]
+        # new_plan_actions = [a for a in new_plan_actions if 'o_copy' not in a and 'o_sync' not in a and 'o_world' not in a and 'o_goal' not in a and 'achieve-goal' not in a and 'sync' not in a and 'reach-goal' not in a]
+        # str_sol = '\n'.join(new_plan_actions)
 
-        clean_path = os.path.join(path_sol, 'clean_{}'.format(solution))
+        # clean_path = os.path.join(path_sol, 'clean_{}'.format(solution))
 
-        with open(clean_path, 'w') as fout:
-            fout.write(str_sol)
+        # with open(clean_path, 'w') as fout:
+        #     fout.write(str_sol)
 
-        solution_tuples.append((solution, str_sol, clean_path))
+        solution_tuples.append((solution, sol_str, path_sol))
     return solution_tuples
 
 
