@@ -28,6 +28,10 @@ class ScriptBuilder:
         self.outer_script.append(self.BASH)
         self.outer_script.append(self.PWD)
 
+        if self.enviorment.conda_env is not None:
+            #self.outer_script.append(f'conda activate {self.enviorment.conda_env}')
+            self.collect_data_cmd = self.collect_data_cmd.replace('python', f'~/.conda/envs/{self.enviorment.conda_env}/bin/python')
+
         self.outer_script.append(f'mkdir {self.system_dst}')
 
         self.manage_dependencies()
@@ -47,7 +51,7 @@ class ScriptBuilder:
         exe_str = self.manage_complex_cmd()
         
         if self.memory != 'None':
-            self.inner_script.append(f'ulimit -v {self.memory}')
+            self.inner_script.append(f'ulimit -Sv {self.memory}')
         
         self.inner_script.append(exe_str)
         
