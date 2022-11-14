@@ -1,15 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
-
-RUNTIME = 'RT'
-PLAN_LENGTH = 'PL'
-EXPANDED = 'EN'
-DOMAIN = 'D'
-SYSTEM = 'SYS'
-INSTANCE = 'I'
-SOLUTION = 'SOL'
-DEFAULT_SOLUTION_FOUND_STRINGS = ['Strong cyclic plan found.', 'Policy successfully found.' , 'Solution found.', 'Plan found.']
+from planning_experiments.data_processor.utils import *
 
 def extract_runtime_from_log(err_log):
     try:
@@ -96,10 +88,10 @@ class LogsParser:
     def __init__(self, path):
         self.path = path
         self.log_processors = {
-            SOLUTION: InfoExtractor(extract_solution_found_log, log=True, additional_args=DEFAULT_SOLUTION_FOUND_STRINGS),
-            RUNTIME: InfoExtractor(extract_runtime_from_log, err=True),
-            PLAN_LENGTH: InfoExtractor(extract_plan_lenght_from_log, log=True),
-            EXPANDED: InfoExtractor(extract_expanded_from_log, log=True),
+            SOL: InfoExtractor(extract_solution_found_log, log=True, additional_args=DEFAULT_SOLUTION_FOUND_STRINGS),
+            RT: InfoExtractor(extract_runtime_from_log, err=True),
+            PL: InfoExtractor(extract_plan_lenght_from_log, log=True),
+            EN: InfoExtractor(extract_expanded_from_log, log=True),
         }
 
     def logs2df(self):
@@ -146,7 +138,7 @@ class LogsParser:
                     err_log = open(os.path.join(path_to_solutions, err), 'r').read()
 
                     record = {
-                        DOMAIN: domain, SYSTEM: system, INSTANCE: f'{prob}'
+                        D: domain, SYS: system, I: f'{prob}'
                     }
                     
                     for name, extractor in self.log_processors.items():
