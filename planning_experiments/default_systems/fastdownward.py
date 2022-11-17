@@ -2,10 +2,10 @@ from planning_experiments.experiment_environment import Planner
 
 class FDWrapper(Planner):
 
-    def __init__(self, name: str, fd_path: str, alias: str = None, search_params: str = None) -> None:
+    def __init__(self, name: str, path: str, alias: str = None, search_params: str = None) -> None:
         super().__init__(name)
         self.name = name
-        self.fd_path = fd_path
+        self.path = path
         self.alias = alias
         self.search_params = search_params
         if alias is None and search_params is None:
@@ -17,7 +17,7 @@ class FDWrapper(Planner):
         return self.name
 
     def get_path(self):
-        return self.fd_path
+        return self.path
 
     def get_cmd(self, domain, instance, solution):
 

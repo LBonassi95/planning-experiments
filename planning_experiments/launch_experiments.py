@@ -21,7 +21,8 @@ class Executor:
         self.log_folder = None
     
     def run_experiments(self, test_run: bool = False):
-        exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_') + '_{}'.format(str(random.randint(0, sys.maxsize)))
+        exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
+        # + '_{}'.format(str(random.randint(0, sys.maxsize)))
         self.define_paths(exp_id)
 
         if self.environment.clean_systems:

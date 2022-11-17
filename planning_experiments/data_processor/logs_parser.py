@@ -148,4 +148,5 @@ class LogsParser:
                     
                     records.append(record)
         df = pd.DataFrame.from_records(records)
+        df.sort_values([SYS, I], inplace=True)
         return df

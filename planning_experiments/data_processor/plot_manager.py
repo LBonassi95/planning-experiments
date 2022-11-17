@@ -66,3 +66,49 @@ class PlotManager:
         else:
             plt.show()
             plt.close()
+
+    def runtime_comparison_plot(self, df: pd.DataFrame, system1: str, system2: str, timeout=1800, save_path=None, fontsize=12, axis_labels=False):
+        plt.figure(figsize=(6, 4), dpi=100, facecolor="w", edgecolor="k")
+
+        # Everything that is not a solution, is considered a timeout
+        df.loc[df[SOL] == False, RT] = 1800
+
+        df = df.drop(columns=[SOL])
+
+        df_system1 = df[df[SYS] == system1]
+        df_system2 = df[df[SYS] == system2]
+        runtime1 = f'{RT}_{system1}'
+        runtime2 = f'{RT}_{system2}'
+        
+        df_system1 = df_system1.rename(columns={RT: runtime1})
+        df_system2 = df_system2.rename(columns={RT: runtime2})
+
+        merged_df = pd.merge(df_system1, df_system2, on=[D, I])
+        legend = []
+        systems = get_col_domain(df, D)
+        plt.yscale('log')
+        plt.xscale('log')
+        x = np.geomspace(1e0, 1800, num=100)
+        points_above = 0
+        for domain in systems:
+            legend.append(domain)
+            df_domain = merged_df[merged_df[D] == domain]
+            runtimes_system1 = list(df_domain[runtime1].replace(np.Inf, timeout))
+            runtimes_system2 = list(df_domain[runtime2].replace(np.Inf, timeout))
+            plt.scatter(runtimes_system1, runtimes_system2, linewidths=1.5, s=100)
+            points_above += len([k for k in np.subtract(runtimes_system2, runtimes_system1) if k > 0])
+        print(points_above)
+        plt.plot(x, x, "k--", label='_nolegend_')
+        plt.grid()
+        plt.xticks(fontsize=fontsize)
+        plt.yticks(fontsize=fontsize)
+        plt.legend(legend, loc='best', borderaxespad=0.5, handletextpad=0.5, framealpha=0.6, ncol=1, fontsize=fontsize, handlelength=2.5, columnspacing=0.3)
+        if axis_labels:
+            plt.xlabel(system1, fontsize=fontsize)
+            plt.ylabel(system2, fontsize=fontsize)
+        if save_path is not None:
+            plt.savefig(save_path, bbox_inches='tight', dpi=300)
+            plt.close()
+        else:
+            plt.show()
+            plt.close()
