@@ -3,95 +3,17 @@ import pandas as pd
 import numpy as np
 from planning_experiments.data_processor.utils import *
 
-def extract_runtime_from_log(err_log):
-    try:
-        assert 'Total Runtime' in err_log
-        lines = [line for line in err_log.split('\n') if 'Total Runtime' in line]
-        assert len(lines) == 1
-        if 'ERROR: source_sink' in lines[0]:
-            return float(1800)
-        return float(lines[0].split(':')[1].strip())
-    except:
-        return None
-
-
-def extract_comptime_from_log(system, system_log, err_log):
-    try:
-        if 'ltl' in system and 'Number of Inferences:' not in system_log:
-            return None
-        lines = [line for line in err_log.split('\n') if 'Compilation Time' in line]
-        assert len(lines) == 1
-        if 'ERROR: source_sink' in lines[0]:
-            return float(1800)
-        return float(lines[0].split(':')[1].strip())
-    except:
-        return None
-
-
-def extract_plan_lenght_from_log(system_log):
-    try:
-        if 'Plan length:' not in system_log:
-            return None
-        start = system_log.find('Plan length:')
-        steps = system_log[start:]
-        return float(steps[:steps.find('step(s).')].split(':')[1].strip())
-    except:
-        return None
-
-
-def extract_expanded_from_log(system_log):
-    try:
-        if 'Plan length:' not in system_log:
-            return None
-        start = system_log.find('Expanded')
-        steps = system_log[start:]
-        return float(steps[:steps.find('state(s).')].split('Expanded')[1].split('state(s).')[0].strip())
-    except:
-        return None
-
-def extract_solution_found_log(system_log, *solution_found_strings):
-    for s in solution_found_strings:
-        if s in system_log:
-            return True
-    return False
-
-def sort_fun(elem):
-    return elem[1]
-
-
-class InfoExtractor:
-
-    def __init__(self, function, log: bool = False, err: bool = False, additional_args = None):
-        self.function = function
-        self.log = log
-        self.err = err
-        self.additional_args = additional_args
-
-    def extract(self, log: str, err: str):
-        params = []
-        
-        if self.log:
-            params.append(log)
-        if self.err:
-            params.append(err)
-
-        if params == []:
-            return None
-
-        if self.additional_args is not None:
-            return self.function(*params, *self.additional_args)
-        else:
-            return self.function(*params)
 
 class LogsParser:
     
     def __init__(self, path):
         self.path = path
         self.log_processors = {
-            SOL: InfoExtractor(extract_solution_found_log, log=True, additional_args=DEFAULT_SOLUTION_FOUND_STRINGS),
-            RT: InfoExtractor(extract_runtime_from_log, err=True),
-            PL: InfoExtractor(extract_plan_lenght_from_log, log=True),
-            EN: InfoExtractor(extract_expanded_from_log, log=True),
+            SOL: SolutionExtractor(),
+            RT: RTExtractor(),
+            PL: PLExtractor(),
+            EN: ENExtractor(),
+            POL: PolicySizeExtractor(),
         }
 
     def logs2df(self):
@@ -141,8 +63,15 @@ class LogsParser:
                         D: domain, SYS: system, I: f'{prob}'
                     }
                     
+                    extraction_params = {
+                        OUT_LOG: system_log,
+                        ERR_LOG: err_log,
+                        SOLUTION_FOUND_STRINGS: DEFAULT_SOLUTION_FOUND_STRINGS,
+                        D: domain, 
+                        SYS: system
+                    }
                     for name, extractor in self.log_processors.items():
-                        result = extractor.extract(log=system_log, err=err_log)
+                        result = extractor.extract(extraction_params)
                         if result is not None:
                             record[name] = result
                     
