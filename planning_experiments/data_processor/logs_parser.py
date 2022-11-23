@@ -12,6 +12,9 @@ class LogsParser:
             SOL: SolutionExtractor(),
             RT: RTExtractor(),
             PL: PLExtractor(),
+            f'{PL}_FF': PLExtractorFF(),
+            'UNSAT': UnsolvableExtractor(),
+            'REAL_PL': RealPLExtractor(),
             EN: ENExtractor(),
             POL: PolicySizeExtractor(),
         }
@@ -66,9 +69,10 @@ class LogsParser:
                     extraction_params = {
                         OUT_LOG: system_log,
                         ERR_LOG: err_log,
-                        SOLUTION_FOUND_STRINGS: DEFAULT_SOLUTION_FOUND_STRINGS,
                         D: domain, 
-                        SYS: system
+                        SYS: system,
+                        I: f'{prob}',
+                        PATH_TO_SOLUTIONS: path_to_solutions
                     }
                     for name, extractor in self.log_processors.items():
                         result = extractor.extract(extraction_params)

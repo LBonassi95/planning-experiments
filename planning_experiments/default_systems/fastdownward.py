@@ -19,9 +19,9 @@ class FDWrapper(Planner):
     def get_path(self):
         return self.path
 
-    def get_cmd(self, domain, instance, solution):
-
+    def get_cmd(self, domain, instance, solution) -> list:
+        
         if self.alias is not None:
-            return f'python ./fast-downward/fast-downward.py --alias {self.alias} --plan-file {solution} {domain} {instance}'
+            return [f'python ./fast-downward/fast-downward.py --alias {self.alias} --plan-file {solution} {domain} {instance}']
         else:
-            return f'python ./fast-downward/fast-downward.py --plan-file {solution} {domain} {instance} {self.search_params}'
+            return [f'python ./fast-downward/fast-downward.py --plan-file {solution} {domain} {instance} {self.search_params}']

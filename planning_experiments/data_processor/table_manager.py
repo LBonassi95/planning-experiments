@@ -9,7 +9,7 @@ class TableManager:
     def __init__(self):
         pass
     
-    def get_coverage(self, df):
+    def get_coverage(self, df) -> pd.DataFrame:
         df = df[df[SOL] == True]
         domains = get_col_domain(df, D)
         systems = get_col_domain(df, SYS)

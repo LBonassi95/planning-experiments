@@ -1,5 +1,6 @@
 import pandas as pd
 from planning_experiments.collect_data_utils import find_regex
+import os
 
 RT = 'RT'
 PL = 'PL'
@@ -11,7 +12,9 @@ SOL = 'SOL'
 OUT_LOG = 'out_log'
 ERR_LOG = 'err_log'
 POL = 'POL'
-DEFAULT_SOLUTION_FOUND_STRINGS = ['Strong cyclic plan found.', 'Policy successfully found.' , 'Solution found.', 'Plan found.']
+PATH_TO_SOLUTIONS = 'path_to_solutions'
+DEFAULT_SOLUTION_FOUND_STRINGS = ['Strong cyclic plan found.', 'Policy successfully found.' , 'Solution found.', 'Plan found.', 'ff: found legal plan']
+UNSOLVABLE_STRINGS = ['Search stopped without finding a solution.', 'Completely explored state space -- no solution!']
 SOLUTION_FOUND_STRINGS = 'solution_found_strings'
 
 
@@ -39,9 +42,8 @@ class SolutionExtractor(InfoExtractor):
         super().__init__()
 
     def extract(self, params: dict) -> bool:
-        solution_found_strings = params[SOLUTION_FOUND_STRINGS]
         system_log = params[OUT_LOG]
-        for s in solution_found_strings:
+        for s in DEFAULT_SOLUTION_FOUND_STRINGS:
             if s in system_log:
                 return True
         return False
@@ -99,6 +101,48 @@ class PLExtractor(InfoExtractor):
         except:
             return None
 
+class RealPLExtractor(InfoExtractor):
+
+    def __init__(self):
+        super().__init__()
+
+    def extract(self, params: dict) -> float:
+        path = params[PATH_TO_SOLUTIONS]
+        prob = params[I]
+        domain = params[D]
+        try:
+            solution = open(os.path.join(path, f'{domain}_{prob}.sol')).read().splitlines()
+            clean_solution = open(os.path.join(path, f'clean_{domain}_{prob}.sol')).read().splitlines()
+
+            new_solution = [act for act in solution if ';' not in act and 'o_copy' not in act and 'sync' not in act and 'o_goal' not in act and 'o_world' not in act]
+            clean_solution = [act for act in clean_solution if ';' not in act]
+            assert len(new_solution) == len(clean_solution)
+            return len(clean_solution)
+        except:
+            return None
+
+class PLExtractorFF(InfoExtractor):
+
+    def __init__(self):
+        super().__init__()
+
+    def extract(self, params: dict) -> float:
+        system_log = params[OUT_LOG]
+        try:
+            if 'step' not in system_log:
+                return
+            else:
+                start = system_log.find('step')
+                end = system_log.find('time spent:')
+
+                actions = system_log[start:end]
+                actions = actions.strip().split('\n')
+
+                ok_actions = ['({})'.format(a.lower().replace('__', ' ').split(':')[1].strip()) for a in actions]
+                return len(ok_actions)
+        except:
+            return None
+
 class ENExtractor(InfoExtractor):
 
     def __init__(self):
@@ -114,6 +158,19 @@ class ENExtractor(InfoExtractor):
             return float(steps[:steps.find('state(s).')].split('Expanded')[1].split('state(s).')[0].strip())
         except:
             return None
+
+
+class UnsolvableExtractor(InfoExtractor):
+
+    def __init__(self):
+        super().__init__()
+
+    def extract(self, params: dict) -> bool:
+        system_log = params[OUT_LOG]
+        for s in UNSOLVABLE_STRINGS:
+            if s in system_log:
+                return True
+        return False
 
 
 
