@@ -11,9 +11,10 @@ class LogsParser:
         self.log_processors = {
             SOL: SolutionExtractor(),
             RT: RTExtractor(),
+            CT : ComptimeExtractor(),
             PL: PLExtractor(),
             f'{PL}_FF': PLExtractorFF(),
-            'UNSAT': UnsolvableExtractor(),
+            UNSAT: UnsolvableExtractor(),
             'REAL_PL': RealPLExtractor(),
             EN: ENExtractor(),
             POL: PolicySizeExtractor(),
