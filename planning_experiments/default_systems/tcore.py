@@ -21,7 +21,8 @@ class TcoreWrapper(Compiler):
         if self.simplify_goal:
             cmd += ' --simplify-goal'
         system_cmd = self.system.get_cmd("compiled_dom.pddl", "compiled_prob.pddl", solution)
+        clean_sol_cmd = f'sed -i "s/__/ /g" {solution}' 
         if isinstance(system_cmd, list):
-            return [cmd] + system_cmd
+            return [cmd] + system_cmd + [clean_sol_cmd]
         else:
-            return [cmd, system_cmd]
+            return [cmd, system_cmd, clean_sol_cmd]

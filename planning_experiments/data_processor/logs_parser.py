@@ -43,9 +43,10 @@ class LogsParser:
                 errs = []
                 for file in os.listdir(path_to_solutions):
                     if file.startswith('out'):
-                        logs.append((file, file.split(domain)[1].replace('_', '').replace('.txt', '')))
+                        #logs.append((file, file.split(domain)[1].replace('_', '').replace('.txt', '')))
+                        logs.append((file, file.split(f'{domain}_')[1].replace('.txt', '')))
                     if file.startswith('err'):
-                        errs.append((file, file.split(domain)[1].replace('_', '').replace('.txt', '')))
+                        errs.append((file, file.split(f'{domain}_')[1].replace('.txt', '')))
 
                 results = []
                 logs.sort(key=sort_fun)

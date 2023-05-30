@@ -15,17 +15,14 @@ POL = 'POL'
 UNSAT = 'UNSAT'
 CT = 'CT'
 PATH_TO_SOLUTIONS = 'path_to_solutions'
-DEFAULT_SOLUTION_FOUND_STRINGS = ['Strong cyclic plan found.', 'Policy successfully found.' , 'Solution found.', 'Plan found.', 'ff: found legal plan']
-UNSOLVABLE_STRINGS = ['Search stopped without finding a solution.', 'Completely explored state space -- no solution!']
+DEFAULT_SOLUTION_FOUND_STRINGS = ['Strong cyclic plan found.', 'Policy successfully found.' , 'Solution found.', 'Plan found.', 'ff: found legal plan', 
+                                  'Problem Solved', 'Solution Found']
+UNSOLVABLE_STRINGS = ['Search stopped without finding a solution.', 'Completely explored state space -- no solution!', 'INITIAL IS UNPROVEN!', 'No solution']
 SOLUTION_FOUND_STRINGS = 'solution_found_strings'
 
 
 def get_col_domain(df: pd.DataFrame, col):
-        domain = []
-        for index, row in df.iterrows():
-            if df.loc[index, col] not in domain:
-                domain.append(df.loc[index, col])
-        return domain
+    return set(df[col])
 
 def sort_fun(elem):
     return elem[1]
@@ -77,7 +74,9 @@ class ComptimeExtractor(InfoExtractor):
         system = params[SYS]
         system_log = params[OUT_LOG]
         try:
-            if 'ltl' in system and 'Number of Inferences:' not in system_log:
+            if ('exp' in system or 'poly' in system) and 'Number of Inferences:' not in system_log:
+                return None
+            if 'ltlfond2fond' in system and ('assert("alive" in free_variables)' in err_log or 'Could not find the value, .*DFA' in system_log):
                 return None
             lines = [line for line in err_log.split('\n') if 'Compilation Time' in line]
             assert len(lines) == 1

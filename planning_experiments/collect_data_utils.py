@@ -53,7 +53,7 @@ def get_data(args, get_solution_function):
     else:
         data_array = []
         for sol_name, solution_str, sol_path in solutions:
-            val_res, validator_value = validate(val_info, sol_path)
+            val_res, validator_value = validate(val_info, os.path.join(sol_path, sol_name))
             data_array.append((system, results_file, domain, instance, stdo_str, stde_str, solution_str, sol_name,
                                val_res, validator_value))
         return data_array

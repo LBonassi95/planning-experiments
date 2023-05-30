@@ -22,6 +22,6 @@ class FDWrapper(Planner):
     def get_cmd(self, domain, instance, solution) -> list:
         
         if self.alias is not None:
-            return [f'python ./fast-downward/fast-downward.py --alias {self.alias} --plan-file {solution} {domain} {instance}']
+            return [f'echo "python ./fast-downward/fast-downward.py --alias {self.alias} --plan-file {solution} {domain} {instance}"', f'python ./fast-downward/fast-downward.py --alias {self.alias} --plan-file {solution} {domain} {instance}']
         else:
             return [f'python ./fast-downward/fast-downward.py --plan-file {solution} {domain} {instance} {self.search_params}']

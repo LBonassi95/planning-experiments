@@ -21,14 +21,14 @@ class PlotManager:
         pass
 
     def survival_plot(self, df, max_coverage, title="", save_path=None, points=1000, verbose=False, fontsize=10, logscale=False, xlabel=None, ylabel=None,
-                      system_colors=None, system_linestyles=None, systems_legend=None):
+                      system_colors=None, system_linestyles=None, systems_legend=None, check_coverage_percentage = None):
         systems = get_col_domain(df, SYS)
         fig = plt.figure(figsize=(6, 4), dpi=100, facecolor="w", edgecolor="k")
-        x = np.linspace(0, 1800, num=points)
+        x = np.linspace(0.2, 1800, num=points)
         ncols = 3
         if logscale:
             ncols = 1
-            x = np.linspace(0.3, 1800, num=points)
+            x = np.linspace(1, 1800, num=points)
             plt.xscale('log')
         legend = []
         df = df[df[SOL] == True]
@@ -49,11 +49,10 @@ class PlotManager:
                 #         coverage += 1
                 # y[i] = float(coverage)
             if verbose:
-                print(runtimes)
-                print(system)
-                if system == 'ltlexp' or system == 'plan4past' or system == 'ltlpoly-4':
-                    for i in range(len(x[:int(len(x)/4)])):
-                        print("{:.2f} - {:.2f}".format(x[i], y[i]))
+                for i in range(len(x[:int(len(x)/4)])):
+                    print("{:.2f} - {:.2f}".format(x[i], y[i]))
+                if check_coverage_percentage is not None:
+                    print("Coverage at {}%: {} - {}s".format(check_coverage_percentage, y[int(check_coverage_percentage*len(x)/100)], int(check_coverage_percentage*len(x)/100)))
             if system_colors is None or system_linestyles is None:
                 plt.plot(x, y, linewidth=3.8,
                          antialiased=True)
@@ -82,16 +81,16 @@ class PlotManager:
         else:
             plt.ylabel(ylabel, fontsize=fontsize)
         plt.legend(legend, loc='best', borderaxespad=0.5, handletextpad=0.5, framealpha=0.6,
-                   ncol=ncols, fontsize=fontsize, handlelength=2.5, columnspacing=0.3)
+                   ncol=ncols, fontsize=fontsize+2, handlelength=2.5, columnspacing=0.3)
         if save_path is not None:
-            plt.savefig(save_path, bbox_inches='tight', dpi=300)
+            plt.savefig(save_path, bbox_inches='tight',pad_inches = 0.01, dpi=300)
             plt.close()
         else:
             plt.show()
             plt.close()
 
     def runtime_comparison_plot(self, df: pd.DataFrame, system1: str, system2: str, timeout=1800, save_path=None, fontsize=12, axis_labels=False,
-                                domain_markers = None, domain_colors = None, domain_legend = None, system_legend = None):
+                                domain_markers = None, domain_colors = None, domain_legend = None, system_legend = None, hide_legend = False, facecolors='none', s=120):
         plt.figure(figsize=(6, 4), dpi=100, facecolor="w", edgecolor="k")
 
         # Everything that is not a solution, is considered a timeout
@@ -123,11 +122,15 @@ class PlotManager:
             runtimes_system2 = list(
                 df_domain[runtime2].replace(np.Inf, timeout))
             if domain_markers is not None and domain_colors is not None:
-                plt.scatter(runtimes_system1, runtimes_system2,
-                            marker=domain_markers[domain], color=domain_colors[domain], facecolors="none", linewidths=1.5, s=120)
+                if facecolors != 'none':
+                    plt.scatter(runtimes_system1, runtimes_system2,
+                                marker=domain_markers[domain], color=domain_colors[domain], linewidths=1.5, s=s)
+                else:
+                    plt.scatter(runtimes_system1, runtimes_system2,
+                                marker=domain_markers[domain], color=domain_colors[domain], linewidths=1.5, s=s, facecolors=facecolors)
             else:
                 plt.scatter(runtimes_system1, runtimes_system2,
-                            linewidths=1.5, s=100)
+                            linewidths=1.5, s=s)
             points_above += len([k for k in np.subtract(runtimes_system2,
                                 runtimes_system1) if k > 0])
         print(points_above)
@@ -135,8 +138,9 @@ class PlotManager:
         plt.grid()
         plt.xticks(fontsize=fontsize)
         plt.yticks(fontsize=fontsize)
-        plt.legend(legend, loc='best', borderaxespad=0.5, handletextpad=0.5,
-                   framealpha=0.6, ncol=1, fontsize=fontsize, handlelength=2.5, columnspacing=0.3)
+        if not hide_legend:
+            plt.legend(legend, loc='best', borderaxespad=0.5, handletextpad=0.5,
+                    framealpha=0.6, ncol=1, fontsize=fontsize, handlelength=2.5, columnspacing=0.3)
         if axis_labels:
             if system_legend is not None:
                 plt.xlabel(system_legend[system1], fontsize=fontsize)
