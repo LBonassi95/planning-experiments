@@ -52,12 +52,9 @@ class ScriptBuilder:
         
 
         if self.enviorment.conda_env is not None:
-            if self.enviorment.qsub == False:
-                for cmd in exe_list:
-                    if '.py' in cmd:
-                        exe_list[exe_list.index(cmd)] = f'conda run -n {self.enviorment.conda_env} --no-capture-output {cmd}'
-            else:
-                self.inner_script.append(f'conda activate {self.enviorment.conda_env}')
+            for cmd in exe_list:
+                if '.py' in cmd:
+                    exe_list[exe_list.index(cmd)] = f'conda run -n {self.enviorment.conda_env} --no-capture-output {cmd}'
 
         self.inner_script += exe_list
 
