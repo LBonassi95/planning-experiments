@@ -149,3 +149,6 @@ class ExperimentEnviorment:
     
     def set_collect_data(self, collect_data: str):
         self.collect_data = collect_data
+
+    def set_parallel_processes(self, parallel_processes: int):
+        self.parallel_processes = parallel_processes

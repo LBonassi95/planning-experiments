@@ -30,7 +30,7 @@ class ScriptBuilder:
 
         if self.enviorment.conda_env is not None:
             #self.outer_script.append(f'conda activate {self.enviorment.conda_env}')
-            self.collect_data_cmd = self.collect_data_cmd.replace('python', f'~/.conda/envs/{self.enviorment.conda_env}/bin/python')
+            self.collect_data_cmd = self.collect_data_cmd.replace('python', f'conda run -n {self.enviorment.conda_env} --no-capture-output python')
 
         self.outer_script.append(f'mkdir {self.system_dst}')
 
@@ -45,15 +45,22 @@ class ScriptBuilder:
         ## INNER SCRIPT ##
         self.inner_script.append(self.BASH)
         
-        if self.enviorment.conda_env is not None:
-            self.inner_script.append(f'conda activate {self.enviorment.conda_env}')
-        
-        exe_str = self.manage_complex_cmd()
+        exe_list = self.manage_complex_cmd()
         
         if self.memory != 'None':
             self.inner_script.append(f'ulimit -Sv {self.memory}')
         
-        self.inner_script.append(exe_str)
+
+        if self.enviorment.conda_env is not None:
+            if self.enviorment.qsub == False:
+                for cmd in exe_list:
+                    if '.py' in cmd:
+                        exe_list[exe_list.index(cmd)] = f'conda run -n {self.enviorment.conda_env} --no-capture-output {cmd}'
+            else:
+                self.inner_script.append(f'conda activate {self.enviorment.conda_env}')
+
+        self.inner_script += exe_list
+
         
         #################
         self.outer_script.append(self.collect_data_cmd)
@@ -77,8 +84,7 @@ class ScriptBuilder:
             cmd_chain = []
             for cmd in self.system_exe:
                 cmd_chain.append(cmd)
-            return '\n'.join(cmd_chain)
+            return cmd_chain
         else:
-            exe_str = self.system_exe
-        return exe_str
+            return [self.system_exe]
 

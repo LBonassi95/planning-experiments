@@ -86,6 +86,7 @@ def main():
         env.add_run(system=system, domains=[blocksworld_1, blocksworld_2])
 
     env.set_qsub(False)
+    env.set_conda_env('planning')
 
     executor = Executor(env, short_name='')
     executor.run_experiments()
