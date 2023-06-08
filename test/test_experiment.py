@@ -5,9 +5,10 @@ from planning_experiments.launch_experiments import Executor
 import click
 from os import path
 from planning_experiments.utils import add_configutation
+import pkg_resources
 
-BLOCKSWORLD_PATH = '/home/studenti/lbonassi/python_libraries/ExperimentsArchitecture/test/pddl_benchmarks/'
-SYSTEMS_PATH = '/home/studenti/lbonassi/python_libraries/ExperimentsArchitecture/test/systems/'
+BLOCKSWORLD_PATH = pkg_resources.resource_filename(__name__, 'pddl_benchmarks/')
+SYSTEMS_PATH = pkg_resources.resource_filename(__name__, 'systems/')
 
 
 class FDWrapper(Planner):
@@ -71,22 +72,21 @@ class TcoreInfoWrapper(Compiler):
 # @click.option('--short_name', '-n', default='')
 def main():
     fd_path = path.join(SYSTEMS_PATH, 'fast-downward')
-    tcore_path = path.join(SYSTEMS_PATH, 'tcore')
-    experiments_folder = '/home/studenti/lbonassi/python_libraries/ExperimentsArchitecture/test/FIRST_TEST'
+    experiments_folder = pkg_resources.resource_filename(__name__, 'FIRST_TEST')
 
     env = ExperimentEnviorment(experiments_folder, name='TEST')
 
     system1 = FDWrapper('lama_first', fd_path, alias='lama-first')
-    #system2 = TcoreInfoWrapper('tcore', tcore_path)
 
     blocksworld_1 = Domain('blocksworld1', path.join(
         BLOCKSWORLD_PATH, 'blocksworld1'), path.join(BLOCKSWORLD_PATH, 'blocksworld1'))
-    #blocksworld_2 = Domain('blocksworld2', path.join(BLOCKSWORLD_PATH, 'blocksworld2'))
+    blocksworld_2 = Domain('blocksworld2', path.join(BLOCKSWORLD_PATH, 'blocksworld2'))
 
     for system in [system1]:
-        env.add_run(system=system, domains=[blocksworld_1])
+        env.add_run(system=system, domains=[blocksworld_1, blocksworld_2])
 
-    env.set_qsub(True)
+    env.set_qsub(False)
+    env.set_conda_env('planning')
 
     executor = Executor(env, short_name='')
     executor.run_experiments()

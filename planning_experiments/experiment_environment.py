@@ -106,6 +106,7 @@ class ExperimentEnviorment:
         self.priority = 500
         self.qsub = True
         self.conda_env = None
+        self.parallel_processes = 8
         self.collect_data = pkg_resources.resource_filename(__name__, f'../{COLLECT_DATA_FOLDER}/collect_data.py')
 
     def add_run(self, system: System, domains: List[Domain]):
@@ -148,3 +149,6 @@ class ExperimentEnviorment:
     
     def set_collect_data(self, collect_data: str):
         self.collect_data = collect_data
+
+    def set_parallel_processes(self, parallel_processes: int):
+        self.parallel_processes = parallel_processes

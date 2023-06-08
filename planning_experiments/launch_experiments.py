@@ -9,6 +9,13 @@ from planning_experiments.script_builder import ScriptBuilder
 from planning_experiments.utils import *
 from typing import List
 
+from multiprocessing import Pool
+
+def run_script(script: str):
+    print(f'Running {script}')
+    os.system(f'chmod +x {script}')
+    os.system(script)
+
 
 class Executor:
 
@@ -124,8 +131,6 @@ class Executor:
                 print(qsub_cmd)
                 os.system(qsub_cmd)
         else:
-            from tqdm import tqdm
-            for i in tqdm(range(len(script_list))):
-                script_name, script = script_list[i]
-                os.system(f'chmod +x {script}')
-                os.system(script)
+            scripts = [script for _, script in script_list]
+            with Pool(self.environment.parallel_processes) as p:
+                p.map(run_script, scripts)
