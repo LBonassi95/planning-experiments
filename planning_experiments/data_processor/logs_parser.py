@@ -2,81 +2,53 @@ import os
 import pandas as pd
 import numpy as np
 from planning_experiments.data_processor.utils import *
+from planning_experiments.constants import *
 
-
-class LogsParser:
-    
-    def __init__(self, path):
-        self.path = path
-        self.log_processors = {
+DEFAULT_LOG_PROCESSORS = {
             SOL: SolutionExtractor(),
             RT: RTExtractor(),
             CT : ComptimeExtractor(),
             PL: PLExtractor(),
-            f'{PL}_FF': PLExtractorFF(),
-            UNSAT: UnsolvableExtractor(),
-            'REAL_PL': RealPLExtractor(),
             EN: ENExtractor(),
-            POL: PolicySizeExtractor(),
         }
+
+class LogsParser:
+    
+    def __init__(self, info: dict):
+        self.info = info
+        self.log_processors = DEFAULT_LOG_PROCESSORS
 
     def logs2df(self):
         records = []
 
-        systems = []
-        sanity_check = False
-        for elem in os.listdir(self.path):
-            if os.path.isdir(os.path.join(self.path, elem)):
-                systems.append(elem)
-            if elem == 'results.txt':
-                sanity_check = True
+        for system in self.info.keys():
+            for domain in self.info[system].keys():
+                for instance in self.info[system][domain].keys():
+                    stdo = self.info[system][domain][instance][STDO]
+                    stde = self.info[system][domain][instance][STDE]
 
-        if not sanity_check:
-            print(f'WARNING! No results.txt in {self.path}')
 
-        for system in systems:
-            system_path = os.path.join(self.path, system)
-            for domain in os.listdir(system_path):
-
-                path_to_solutions = os.path.join(system_path, domain)
-                logs = []
-                errs = []
-                for file in os.listdir(path_to_solutions):
-                    if file.startswith('out'):
-                        #logs.append((file, file.split(domain)[1].replace('_', '').replace('.txt', '')))
-                        logs.append((file, file.split(f'{domain}_')[1].replace('.txt', '')))
-                    if file.startswith('err'):
-                        errs.append((file, file.split(f'{domain}_')[1].replace('.txt', '')))
-
-                results = []
-                logs.sort(key=sort_fun)
-                errs.sort(key=sort_fun)
-                for i in range(len(logs)):
-                    log, prob = logs[i]
-                    err, prob_ = errs[i]
-                    assert prob == prob_
-                    system_log = open(os.path.join(path_to_solutions, log), 'r').read()
-                    # if 'Search stopped' in system_log:
-                    #     print(f'false->{log}')
-                    # if 'Empty goal!' in system_log:
-                    #     print(f'false->{log}')
-                    # if 'Simplified to trivially false goal! Generating unsolvable' in system_log:
-                    #     print(f'false->{log}')
-                    err_log = open(os.path.join(path_to_solutions, err), 'r').read()
+                    system_log = open(stdo, 'r').read()
+                    err_log = open(stde, 'r').read()
 
                     record = {
-                        D: domain, SYS: system, I: f'{prob}'
+                        D: domain, SYS: system, I: f'{instance}'
                     }
                     
                     extraction_params = {
-                        OUT_LOG: system_log,
-                        ERR_LOG: err_log,
+                        STDO: system_log,
+                        STDE: err_log,
                         D: domain, 
                         SYS: system,
-                        I: f'{prob}',
-                        PATH_TO_SOLUTIONS: path_to_solutions
+                        I: f'{instance}',
+                        SOLUTION_PATH: self.info[system][domain][instance][STDE]
                     }
-                    for name, extractor in self.log_processors.items():
+
+                    ##
+                    # INSERT VALIDATION HERE
+                    ##
+
+                    for name, extractor in DEFAULT_LOG_PROCESSORS.items():
                         result = extractor.extract(extraction_params)
                         if result is not None:
                             record[name] = result

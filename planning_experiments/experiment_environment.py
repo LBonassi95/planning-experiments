@@ -107,7 +107,7 @@ class ExperimentEnviorment:
         self.qsub = True
         self.conda_env = None
         self.parallel_processes = 8
-        self.collect_data = pkg_resources.resource_filename(__name__, f'../{COLLECT_DATA_FOLDER}/collect_data.py')
+        self.collect_data = pkg_resources.resource_filename(__name__, f'./{BIN_FOLDER}/summary.py')
 
     def add_run(self, system: System, domains: List[Domain]):
 

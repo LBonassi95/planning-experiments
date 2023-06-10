@@ -30,7 +30,7 @@ class ScriptBuilder:
 
         if self.enviorment.conda_env is not None:
             #self.outer_script.append(f'conda activate {self.enviorment.conda_env}')
-            self.collect_data_cmd = self.collect_data_cmd.replace('python', f'conda run -n {self.enviorment.conda_env} --no-capture-output python')
+            self.collect_data_cmd = self.collect_data_cmd.replace('python', f'conda run -n {self.enviorment.conda_env} --no-capture-output python', 1)
 
         self.outer_script.append(f'mkdir {self.system_dst}')
 
