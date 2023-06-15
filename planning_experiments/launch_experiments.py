@@ -54,19 +54,20 @@ class Executor:
         scripts_setup(self.script_folder)
         
         info_dict = {}
+        info_dict_path = path.join(self.results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id), 'blob.json')
 
         for planner in self.environment.run_dictionary.keys():
             info_dict[planner.name] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
                 info_dict[planner.name][domain.name] = {}
-                self._create_script(planner, domain, exp_id, script_list, info_dict, test_run)
+                self._create_script(planner, domain, exp_id, script_list, info_dict, info_dict_path, test_run)
 
-        with open(path.join(path.join(self.results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id)), 'info.json'), 'w') as f:
+        with open(info_dict_path, 'w') as f:
             json.dump(info_dict, f, indent=4)
                 
         return script_list
   
-    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], info_dict: dict, test_run: bool):
+    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], info_dict: dict, info_dict_path: str, test_run: bool):
         planner_name = planner.get_name()
         solution_folder = create_results_folder(self.results_folder, exp_id, planner_name, domain.name)
         
@@ -111,12 +112,19 @@ class Executor:
             info_dict[planner.name][domain.name][instance_name][VALIDATION] = val
 
             builder = ScriptBuilder(self.environment, 
-                                    planner,
+                                    system=planner,
+                                    domain_name=domain.name,
+                                    instance_name=instance_name,
+                                    results=info_dict_path,
                                     system_dst=path.abspath(copy_planner_dst),
                                     time=str(self.environment.time),
                                     memory=str(self.environment.memory),
                                     system_exe=planner_exe,
-                                    stdo=stdo, stde=stde, script_name=script_name, script_folder=self.script_folder)
+                                    stdo=stdo, 
+                                    stde=stde, 
+                                    script_name=script_name,
+                                    info_dict_path=info_dict_path, 
+                                    script_folder=self.script_folder)
             
             inner_script, outer_script = builder.get_script()
             write_script(inner_script, script_name, self.script_folder)

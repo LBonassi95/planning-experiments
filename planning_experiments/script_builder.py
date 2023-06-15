@@ -1,15 +1,27 @@
 from os import path
 from planning_experiments.data_structures.environment import Environment, System
-
+import pkg_resources
 
 class ScriptBuilder:
 
     BASH = "#!/bin/bash"
     PWD = "var=$PWD"
 
-    def __init__(self, env: Environment, system: System, system_dst: str, time: int, 
-                       system_exe: str, stdo: str, stde: str, script_name: str, 
-                       script_folder: str, memory: int = None) -> None:
+    def __init__(self, env: Environment, 
+                       system: System,  
+                       domain_name: str, 
+                       instance_name: str, 
+                       results: str,
+                       system_dst: str, 
+                       time: int, 
+                       system_exe: str, 
+                       stdo: str, 
+                       stde: str, 
+                       script_name: str, 
+                       info_dict_path: str,
+                       script_folder: str, 
+                       memory: int = None) -> None:
+        
         self.system = system
         self.enviorment = env
         self.inner_script = []
@@ -22,7 +34,11 @@ class ScriptBuilder:
         self.stde = stde
         self.script_name = script_name
         self.script_folder = script_folder
-        
+        self.info_dict_path = info_dict_path
+        self.domain_name = domain_name
+        self.instance_name = instance_name
+        self.results = results
+
     def get_script(self):
         self.outer_script.append(self.BASH)
         self.outer_script.append(self.PWD)
@@ -51,6 +67,9 @@ class ScriptBuilder:
         #################
         if self.enviorment.delete_systems:
             self.outer_script.append(f'rm -r -f {self.system_dst}')
+        
+        save_results_path = pkg_resources.resource_filename(__name__, f'./bin/save_results.py')
+        self.outer_script.append(f'python {save_results_path} {self.results} {self.system.name} {self.domain_name} {self.instance_name}')
         
         inner_script_str = '\n'.join(self.inner_script)
         outer_script_str = '\n'.join(self.outer_script)
