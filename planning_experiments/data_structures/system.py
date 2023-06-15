@@ -39,8 +39,8 @@ class Planner(System):
 
 # FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
 class Compiler(Planner):
-    def __init__(self, name: str, system: System = None) -> None:
-        super().__init__(name)
+    def __init__(self, name: str, compiler_path: str, system: System = None) -> None:
+        super().__init__(name, compiler_path)
         self.system = system
 
     def get_cmd(self, domain: str, instance: str, solution: str) -> List[str]:
