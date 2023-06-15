@@ -4,7 +4,7 @@ import sys
 import random
 import datetime
 from planning_experiments.constants import *
-from planning_experiments.experiment_environment import Domain, ExperimentEnviorment, System
+from planning_experiments.data_structures.environment import Domain, Environment, System
 from planning_experiments.script_builder import ScriptBuilder
 from planning_experiments.utils import *
 from typing import List
@@ -20,7 +20,7 @@ def run_script(script: str):
 
 class Executor:
 
-    def __init__(self, environment: ExperimentEnviorment, short_name: str = '') -> None:
+    def __init__(self, environment: Environment, short_name: str = '') -> None:
         self.environment = environment
         self.short_name = short_name
         self.script_folder = None
@@ -68,7 +68,7 @@ class Executor:
   
     def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], info_dict: dict, test_run: bool):
         planner_name = planner.get_name()
-        solution_folder, results_file = create_results_folder(self.results_folder, exp_id, planner_name, domain.name)
+        solution_folder = create_results_folder(self.results_folder, exp_id, planner_name, domain.name)
         
         instances = domain.instances
         if test_run:
@@ -110,21 +110,12 @@ class Executor:
             
             info_dict[planner.name][domain.name][instance_name][VALIDATION] = val
 
-            collect_data_cmd = get_collect_cmd(self.environment, 
-                                                solution_name, 
-                                                solution_folder,
-                                                domain.name, 
-                                                instance_name, 
-                                                stdo, 
-                                                stde, 
-                                                results_file, 
-                                                planner_name, 
-                                                val)
-
-            builder = ScriptBuilder(self.environment, planner,
+            builder = ScriptBuilder(self.environment, 
+                                    planner,
                                     system_dst=path.abspath(copy_planner_dst),
-                                    time=str(self.environment.time), memory=str(self.environment.memory),
-                                    system_exe=planner_exe, collect_data_cmd=collect_data_cmd, 
+                                    time=str(self.environment.time),
+                                    memory=str(self.environment.memory),
+                                    system_exe=planner_exe,
                                     stdo=stdo, stde=stde, script_name=script_name, script_folder=self.script_folder)
             
             inner_script, outer_script = builder.get_script()

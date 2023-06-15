@@ -43,19 +43,3 @@ STDO = 'stdo'
 VAL_DOMAIN_PATH = 'val_domain_path'
 VAL_INSTANCE_PATH = 'val_instance_path'
 VALIDATION = 'validation'
-
-# DATA COLLECTION
-RT = 'RT'
-PL = 'PL'
-EN = 'EN'
-D = 'D'
-SYS = 'SYS'
-I = 'I'
-SOL = 'SOL'
-POL = 'POL'
-UNSAT = 'UNSAT'
-CT = 'CT'
-DEFAULT_SOLUTION_FOUND_STRINGS = ['Strong cyclic plan found.', 'Policy successfully found.' , 'Solution found.', 'Plan found.', 'ff: found legal plan', 
-                                  'Problem Solved', 'Solution Found']
-UNSOLVABLE_STRINGS = ['Search stopped without finding a solution.', 'Completely explored state space -- no solution!', 'INITIAL IS UNPROVEN!', 'No solution']
-SOLUTION_FOUND_STRINGS = 'solution_found_strings'

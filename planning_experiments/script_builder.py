@@ -1,5 +1,5 @@
 from os import path
-from planning_experiments.experiment_environment import ExperimentEnviorment, System
+from planning_experiments.data_structures.environment import Environment, System
 
 
 class ScriptBuilder:
@@ -7,8 +7,8 @@ class ScriptBuilder:
     BASH = "#!/bin/bash"
     PWD = "var=$PWD"
 
-    def __init__(self, env: ExperimentEnviorment, system: System, system_dst: str, time: int, 
-                       system_exe: str, collect_data_cmd: str, stdo: str, stde: str, script_name: str, 
+    def __init__(self, env: Environment, system: System, system_dst: str, time: int, 
+                       system_exe: str, stdo: str, stde: str, script_name: str, 
                        script_folder: str, memory: int = None) -> None:
         self.system = system
         self.enviorment = env
@@ -18,7 +18,6 @@ class ScriptBuilder:
         self.system_dst = system_dst
         self.time = time
         self.system_exe = system_exe
-        self.collect_data_cmd = collect_data_cmd
         self.stdo = stdo
         self.stde = stde
         self.script_name = script_name
@@ -27,10 +26,6 @@ class ScriptBuilder:
     def get_script(self):
         self.outer_script.append(self.BASH)
         self.outer_script.append(self.PWD)
-
-        if self.enviorment.conda_env is not None:
-            #self.outer_script.append(f'conda activate {self.enviorment.conda_env}')
-            self.collect_data_cmd = self.collect_data_cmd.replace('python', f'conda run -n {self.enviorment.conda_env} --no-capture-output python', 1)
 
         self.outer_script.append(f'mkdir {self.system_dst}')
 
@@ -49,18 +44,11 @@ class ScriptBuilder:
         
         if self.memory != 'None':
             self.inner_script.append(f'ulimit -Sv {self.memory}')
-        
-
-        if self.enviorment.conda_env is not None:
-            for cmd in exe_list:
-                if '.py' in cmd:
-                    exe_list[exe_list.index(cmd)] = f'conda run -n {self.enviorment.conda_env} --no-capture-output {cmd}'
 
         self.inner_script += exe_list
 
         
         #################
-        self.outer_script.append(self.collect_data_cmd)
         if self.enviorment.delete_systems:
             self.outer_script.append(f'rm -r -f {self.system_dst}')
         

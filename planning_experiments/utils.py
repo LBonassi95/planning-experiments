@@ -1,13 +1,9 @@
 import os
 from os import path
 from planning_experiments.constants import *
-from planning_experiments.experiment_environment import Configuration, ExperimentEnviorment, System
+from planning_experiments.data_structures import *
 from typing import Tuple
 import pkg_resources
-
-
-def add_configutation(base_cmd: str, configuration: Configuration):
-    return ' '.join(base_cmd.split(' ') + configuration.parameters)
 
 
 def scripts_setup(script_folder):
@@ -32,14 +28,10 @@ def create_results_folder(results_folder: str, exp_id: str, planner: str, domain
     if not path.isdir(results_folder_planner):
         os.mkdir(results_folder_planner)
 
-    results_file = path.join(results_folder, 'results.txt')
-    if not path.exists(results_file):
-        os.system('touch {}'.format(results_file))
-
     results_folder_planner_domain = path.join(results_folder_planner, domain)
     os.mkdir(results_folder_planner_domain)
 
-    return path.abspath(results_folder_planner_domain), results_file
+    return path.abspath(results_folder_planner_domain)
 
 
 def manage_planner_copy(systems_tmp_folder: str, name: str, planner: System, domain: str, instance: str, exp_id: str) -> Tuple[str, str]:
@@ -65,7 +57,7 @@ def delete_old_folder(folder: str):
 
 
 "python #COLLECT_DATA_SCRIPT# #SYSTEM# #RESULTS# #SOL_FILE# #SOL_INSTANCE# #SOL_DOMAIN# #STDO# #STDE# #DOMAIN4VAL#"
-def get_collect_cmd(envronment: ExperimentEnviorment,
+def get_collect_cmd(envronment: Environment,
                     solution_name: str,
                     solution_folder: str,
                     domain_name: str,

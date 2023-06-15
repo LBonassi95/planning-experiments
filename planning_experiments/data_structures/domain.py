@@ -40,3 +40,15 @@ class InstancesCollector:
                 # #assert test_soundness == pddl_instances[i]
                 pairs.append((pddl_domains[i], pddl_instances[i]))
         return pairs
+
+class Domain:
+    def __init__(self, name: str, path2pddl: str, validation_path: str = None, instances_collector: InstancesCollector = None) -> None:
+        self.name = name
+        self.path = path2pddl
+        self.validation_path = validation_path
+        if instances_collector is None:
+            instances_collector = InstancesCollector()
+        self.instances = instances_collector.collect_instances(self.path)
+    
+    def __repr__(self) -> str:
+        return self.name
