@@ -32,8 +32,10 @@ PLANNERS_FOLDER = 'systems'
 LOG_FOLDER = 'logs'
 BIN_FOLDER = 'bin'
 
+SOLUTION_FOLDER = 'solutions'
 
-# Info dict keys
+
+# Blob keys
 PLANNER_EXE = 'planner_exe'
 DOMAIN_PATH = 'domain_path'
 INSTANCE_PATH = 'instance_path'

@@ -14,24 +14,18 @@ def scripts_setup(script_folder):
     os.makedirs(script_folder)
 
 
-def create_results_folder(results_folder: str, exp_id: str, planner: str, domain: str):
-    if not path.isdir(results_folder):
-        os.makedirs(results_folder)
+def get_run_folder(results_folder: str, exp_id: str):
+    create_folder(results_folder)
 
-    results_folder = path.join(
-        results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id))
-    if not path.isdir(results_folder):
-        os.mkdir(results_folder)
+    results_folder = path.join(results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id))
+    create_folder(results_folder)
 
-    results_folder_planner = path.join(
-        results_folder, '{}'.format(planner))
-    if not path.isdir(results_folder_planner):
-        os.mkdir(results_folder_planner)
+    return path.abspath(results_folder)
 
-    results_folder_planner_domain = path.join(results_folder_planner, domain)
-    os.mkdir(results_folder_planner_domain)
 
-    return path.abspath(results_folder_planner_domain)
+def create_folder(folder_path: str):
+    if not path.isdir(folder_path):
+        os.makedirs(folder_path)
 
 
 def manage_planner_copy(systems_tmp_folder: str, name: str, planner: System, domain: str, instance: str, exp_id: str) -> Tuple[str, str]:
@@ -54,32 +48,3 @@ def write_script(shell_script, script_name, script_dst):
 def delete_old_folder(folder: str):
     if path.isdir(folder):
         os.system(RM_CMD.format(folder))
-
-
-"python #COLLECT_DATA_SCRIPT# #SYSTEM# #RESULTS# #SOL_FILE# #SOL_INSTANCE# #SOL_DOMAIN# #STDO# #STDE# #DOMAIN4VAL#"
-def get_collect_cmd(envronment: Environment,
-                    solution_name: str,
-                    solution_folder: str,
-                    domain_name: str,
-                    instance_name: str,
-                    stdo: str,
-                    stde: str,
-                    results_file: str,
-                    system_name: str,
-                    val: str):
-
-    collect_data_path = envronment.collect_data
-    results_file_path = path.abspath(results_file)
-    solution_path = path.join(solution_folder, solution_name)
-
-    collect_data = ["python", collect_data_path,
-                    system_name,
-                    results_file_path,
-                    solution_path,
-                    instance_name,
-                    domain_name,
-                    stdo,
-                    stde,
-                    val]
-
-    return ' '.join(collect_data)

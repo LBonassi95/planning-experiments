@@ -49,7 +49,7 @@ class ScriptBuilder:
         self.outer_script.append(f'cd {self.system_dst}')
 
         if self.enviorment.qsub:
-            self.outer_script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} bash -i {path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}')
+            self.outer_script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}')
         else:
             self.outer_script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}')
 

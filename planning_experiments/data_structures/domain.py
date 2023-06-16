@@ -42,10 +42,9 @@ class InstancesCollector:
         return pairs
 
 class Domain:
-    def __init__(self, name: str, path2pddl: str, validation_path: str = None, instances_collector: InstancesCollector = None) -> None:
+    def __init__(self, name: str, path2pddl: str, instances_collector: InstancesCollector = None) -> None:
         self.name = name
         self.path = path2pddl
-        self.validation_path = validation_path
         if instances_collector is None:
             instances_collector = InstancesCollector()
         self.instances = instances_collector.collect_instances(self.path)

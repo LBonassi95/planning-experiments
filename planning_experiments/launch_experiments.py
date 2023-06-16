@@ -53,23 +53,23 @@ class Executor:
         script_list = []
         scripts_setup(self.script_folder)
         
-        info_dict = {}
-        info_dict_path = path.join(self.results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id), 'blob.json')
+        blob = {}
+        blob_path = path.join(self.results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id), 'blob.json')
 
         for planner in self.environment.run_dictionary.keys():
-            info_dict[planner.name] = {}
+            blob[planner.name] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
-                info_dict[planner.name][domain.name] = {}
-                self._create_script(planner, domain, exp_id, script_list, info_dict, info_dict_path, test_run)
+                blob[planner.name][domain.name] = {}
+                self._create_script(planner, domain, exp_id, script_list, blob, blob_path, test_run)
 
-        with open(info_dict_path, 'w') as f:
-            json.dump(info_dict, f, indent=4)
+        with open(blob_path, 'w') as f:
+            json.dump(blob, f, indent=4)
                 
         return script_list
   
-    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], info_dict: dict, info_dict_path: str, test_run: bool):
+    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool):
         planner_name = planner.get_name()
-        solution_folder = create_results_folder(self.results_folder, exp_id, planner_name, domain.name)
+        run_folder = get_run_folder(self.results_folder, exp_id)
         
         instances = domain.instances
         if test_run:
@@ -78,44 +78,40 @@ class Executor:
         for pddl_domain, pddl_instance in instances:
 
             instance_name = pddl_instance.replace(PDDL_EXTENSION, '')
+
+            instance_folder = path.join(run_folder, planner_name, domain.name, instance_name)
+            create_folder(instance_folder)
+
+            solution_folder = path.join(instance_folder, SOLUTION_FOLDER)
+            create_folder(solution_folder)
+
             solution_name = f'{domain.name}_{instance_name}.sol'
             script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}.sh'
             path2domain = path.join(domain.path, pddl_domain)
             path2instance = path.join(domain.path, pddl_instance)
             path2solution = path.join(solution_folder, solution_name)
-            stde = path.abspath(path.join(solution_folder, f'err_{domain.name}_{instance_name}.txt'))
-            stdo = path.abspath(path.join(solution_folder, f'out_{domain.name}_{instance_name}.txt'))
+            stde = path.abspath(path.join(instance_folder, f'err_{domain.name}_{instance_name}.txt'))
+            stdo = path.abspath(path.join(instance_folder, f'out_{domain.name}_{instance_name}.txt'))
             planner_exe = planner.get_cmd(path2domain, path2instance, path2solution)
 
-            # Collecting info
-            info_dict[planner.name][domain.name][instance_name] = {}
-            info_dict[planner.name][domain.name][instance_name][DOMAIN_PATH] = path2domain
-            info_dict[planner.name][domain.name][instance_name][INSTANCE_PATH] = path2instance
-            info_dict[planner.name][domain.name][instance_name][SOLUTION_PATH] = path2solution
-            info_dict[planner.name][domain.name][instance_name][STDE] = stde
-            info_dict[planner.name][domain.name][instance_name][STDO] = stdo
-            info_dict[planner.name][domain.name][instance_name][PLANNER_EXE] = planner_exe
-            #################
+            # Collecting info #################
+            blob[planner.name][domain.name][instance_name] = {}
+            blob[planner.name][domain.name][instance_name][DOMAIN_PATH] = path2domain
+            blob[planner.name][domain.name][instance_name][INSTANCE_PATH] = path2instance
+            blob[planner.name][domain.name][instance_name][SOLUTION_PATH] = solution_folder
+            blob[planner.name][domain.name][instance_name][STDE] = stde
+            blob[planner.name][domain.name][instance_name][STDO] = stdo
+            blob[planner.name][domain.name][instance_name][PLANNER_EXE] = planner_exe
+            ###################################
             
             copy_planner_dst, planner_source = manage_planner_copy(
                 self.systems_tmp_folder, self.environment.name, planner, domain, instance_name, exp_id)
-
-            if domain.validation_path is None:
-                val = NO_VALIDATION_PERFORMED
-            else:
-                path_to_domain4val = path.join(domain.validation_path, pddl_domain)
-                path_to_instance4val = path.join(domain.validation_path, pddl_instance)
-                val = '{}#{}'.format(path_to_domain4val, path_to_instance4val)
-                info_dict[planner.name][domain.name][instance_name][VAL_DOMAIN_PATH] = path_to_domain4val
-                info_dict[planner.name][domain.name][instance_name][VAL_INSTANCE_PATH] = path_to_instance4val
-            
-            info_dict[planner.name][domain.name][instance_name][VALIDATION] = val
 
             builder = ScriptBuilder(self.environment, 
                                     system=planner,
                                     domain_name=domain.name,
                                     instance_name=instance_name,
-                                    results=info_dict_path,
+                                    results=blob_path,
                                     system_dst=path.abspath(copy_planner_dst),
                                     time=str(self.environment.time),
                                     memory=str(self.environment.memory),
@@ -123,7 +119,7 @@ class Executor:
                                     stdo=stdo, 
                                     stde=stde, 
                                     script_name=script_name,
-                                    info_dict_path=info_dict_path, 
+                                    info_dict_path=blob_path, 
                                     script_folder=self.script_folder)
             
             inner_script, outer_script = builder.get_script()

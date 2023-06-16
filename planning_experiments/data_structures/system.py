@@ -28,7 +28,7 @@ class Planner(System):
         super().__init__(name)
         self.planner_path = planner_path
 
-    def get_cmd(self, domain: str, instance: str, solution: str) -> List[str]:
+    def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
         raise NotImplementedError
     
     def get_path(self) -> str:
@@ -43,7 +43,7 @@ class Compiler(Planner):
         super().__init__(name, compiler_path)
         self.system = system
 
-    def get_cmd(self, domain: str, instance: str, solution: str) -> List[str]:
+    def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
         return super().get_cmd()
 
     def get_name(self) -> str:

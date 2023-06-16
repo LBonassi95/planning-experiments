@@ -1,6 +1,7 @@
 import sys
 import json
 import fcntl
+import os
 
 def main(argv):
     assert len(argv) == 4, 'Usage: python save_results.py <results_file> <system> <domain> <instance>'
@@ -21,6 +22,17 @@ def main(argv):
     stdo_str = open(stdo_path, 'r').read()
     stde_str = open(stde_path, 'r').read()
 
+    # ACQUIRE SOLUTIONS
+    n_solutuions = 0
+    solutions = []
+    for sol_file in os.listdir(json_data[system][domain][instance]['solution_path']):
+        if '.sol' in sol_file:
+            n_solutuions += 1
+            solution_str = open(os.path.join(json_data[system][domain][instance]['solution_path'], sol_file), 'r').read()
+            solutions.append(solution_str)
+
+    json_data[system][domain][instance]['solutions'] = solutions
+    json_data[system][domain][instance]['num_solutions'] = n_solutuions
     json_data[system][domain][instance]['stdo'] = stdo_str
     json_data[system][domain][instance]['stde'] = stde_str
 
