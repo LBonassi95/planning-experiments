@@ -68,8 +68,8 @@ class ScriptBuilder:
         if self.enviorment.delete_systems:
             self.outer_script.append(f'rm -r -f {self.system_dst}')
         
-        save_results_path = pkg_resources.resource_filename(__name__, f'./bin/save_results.py')
-        self.outer_script.append(f'python {save_results_path} {self.results} {self.system.name} {self.domain_name} {self.instance_name}')
+        # save_results_path = pkg_resources.resource_filename(__name__, f'./bin/save_results.py')
+        # self.outer_script.append(f'python {save_results_path} {self.results} {self.system.name} {self.domain_name} {self.instance_name}')
         
         inner_script_str = '\n'.join(self.inner_script)
         outer_script_str = '\n'.join(self.outer_script)

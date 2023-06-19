@@ -10,8 +10,10 @@ from planning_experiments.utils import *
 from typing import List
 import json
 import subprocess
-
+import time
 from multiprocessing import Pool
+from tqdm import tqdm
+from planning_experiments.save_results import save_results
 
 def run_script(script: str):
     print(f'Running {script}')
@@ -41,8 +43,8 @@ class Executor:
         if self.environment.clean_logs:
             delete_old_folder(self.log_folder)
 
-        script_list = self.create_scripts(exp_id, test_run)
-        self.execute_scripts(script_list)
+        script_list, script2blob, blob_path = self.create_scripts(exp_id, test_run)
+        self.execute_scripts(script_list, script2blob, blob_path)
     
     def define_paths(self, exp_id):
         self.script_folder = path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER, self.environment.name, exp_id)
@@ -56,19 +58,20 @@ class Executor:
         
         blob = {}
         blob_path = path.join(self.results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id), 'blob.json')
+        script2blob = {}
 
         for planner in self.environment.run_dictionary.keys():
             blob[planner.name] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
                 blob[planner.name][domain.name] = {}
-                self._create_script(planner, domain, exp_id, script_list, blob, blob_path, test_run)
+                self._create_script(planner, domain, exp_id, script_list, blob, blob_path, test_run, script2blob)
 
         with open(blob_path, 'w') as f:
             json.dump(blob, f, indent=4)
                 
-        return script_list
+        return script_list, script2blob, blob_path
   
-    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool):
+    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool, script2blob: dict):
         planner_name = planner.get_name()
         run_folder = get_run_folder(self.results_folder, exp_id)
         
@@ -127,16 +130,27 @@ class Executor:
             write_script(inner_script, script_name, self.script_folder)
             write_script(outer_script, f'run_{script_name}', self.script_folder)
             script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, f'run_{script_name}')))
+            script2blob[script_name.replace('.sh', '')] = (planner.name, domain.name, instance_name)
+
 
     
-    def execute_scripts(self, script_list: List[str]):
+    def is_completed(self, job_infos: Tuple[str, str]):
+        job_id = job_infos[0]
+        output = subprocess.check_output(f'qstat -f {job_id}', shell=True, universal_newlines=True)
+        if 'job_state = C' in output or 'Unknown Job Id' in output:
+            return True
+        else:
+            return False
+
+    
+    def execute_scripts(self, script_list: List[str], script2blob: dict, blob_path: str):
         # Qsub logs setup
         os.makedirs(self.log_folder)
         #################
 
         if self.environment.qsub:
             
-            job_ids = []
+            job_infos = []
 
             for (script_name, script) in script_list:
                 qsub_cmd = QSUB_TEMPLATE
@@ -148,15 +162,27 @@ class Executor:
                     .replace(SCRIPT_QSUB, script)\
                     .replace(LOG_QSUB, stdo)\
                     .replace(ERR_QSUB, stde)
-                print(qsub_cmd)
-                os.system(qsub_cmd)
                 job_id = subprocess.check_output(qsub_cmd, shell=True, universal_newlines=True)
-                job_ids.append(job_id.strip())
+                job_infos.append((job_id.strip(), script_name))
             
-            print('The Job IDs are:')
-            for job_id in job_ids:
-                print(job_id)
 
+            running_jobs = set(job_infos)
+            progress_bar = tqdm(total=len(running_jobs), desc="Progress", unit="iteration")
+            while len(running_jobs) > 0:
+                job_completed_so_far = filter(self.is_completed, running_jobs)
+                job_completed_so_far = list(job_completed_so_far)
+                running_jobs = running_jobs.difference(job_completed_so_far)
+                if len(job_completed_so_far) > 0:
+                    progress_bar.update(len(job_completed_so_far))
+
+                    for job_id, script_name in job_completed_so_far:
+                        planner, domain, instance = script2blob[script_name]
+                        save_results(blob_path, planner, domain, instance)
+
+                time.sleep(5)
+            
+            progress_bar.close()
+            
         else:
             scripts = [script for _, script in script_list]
             with Pool(self.environment.parallel_processes) as p:
