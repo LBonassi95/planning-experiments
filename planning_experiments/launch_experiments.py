@@ -9,6 +9,7 @@ from planning_experiments.script_builder import ScriptBuilder
 from planning_experiments.utils import *
 from typing import List
 import json
+import subprocess
 
 from multiprocessing import Pool
 
@@ -134,6 +135,8 @@ class Executor:
         #################
 
         if self.environment.qsub:
+            
+            job_ids = []
 
             for (script_name, script) in script_list:
                 qsub_cmd = QSUB_TEMPLATE
@@ -147,6 +150,13 @@ class Executor:
                     .replace(ERR_QSUB, stde)
                 print(qsub_cmd)
                 os.system(qsub_cmd)
+                job_id = subprocess.check_output(qsub_cmd, shell=True, universal_newlines=True)
+                job_ids.append(job_id.strip())
+            
+            print('The Job IDs are:')
+            for job_id in job_ids:
+                print(job_id)
+
         else:
             scripts = [script for _, script in script_list]
             with Pool(self.environment.parallel_processes) as p:
