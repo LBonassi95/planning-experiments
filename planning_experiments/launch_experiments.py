@@ -16,7 +16,7 @@ from tqdm import tqdm
 from planning_experiments.save_results import save_results
 
 def run_script(script: str):
-    print(f'Running {script}')
+    #print(f'Running {script}')
     os.system(f'chmod +x {script}')
     os.system(script)
 
@@ -185,5 +185,16 @@ class Executor:
             
         else:
             scripts = [script for _, script in script_list]
+            progress_bar = tqdm(total=len(scripts), desc="Progress", unit="iteration")
+            results = []
             with Pool(self.environment.parallel_processes) as p:
-                p.map(run_script, scripts)
+                # Use imap_unordered to get results asynchronously
+                for result in p.imap_unordered(run_script, scripts):
+                    results.append(result)
+                    progress_bar.update(1)
+
+                # Close the progress bar
+                progress_bar.close()
+
+                # Process the results as needed
+                print("Results:", results)
