@@ -13,6 +13,7 @@ import subprocess
 import time
 from multiprocessing import Pool
 from tqdm import tqdm
+from tabulate import tabulate
 from planning_experiments.save_results import save_results
 
 def run_script(script_info: Tuple[str, str]):
@@ -33,9 +34,14 @@ class Executor:
         self.systems_tmp_folder = None
         self.log_folder = None
     
+    def show_info(self, run_folder: str):
+        data = self.environment.get_info()
+        data.append(['Results folder:', run_folder])
+        print(LOGO)
+        print(tabulate(data, headers=["Infos", ""], tablefmt="fancy_grid"))
+    
     def run_experiments(self, test_run: bool = False):
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
-        # + '_{}'.format(str(random.randint(0, sys.maxsize)))
         self.define_paths(exp_id)
 
         if self.environment.clean_systems:
@@ -45,7 +51,10 @@ class Executor:
         if self.environment.clean_logs:
             delete_old_folder(self.log_folder)
 
-        script_list, script2blob, blob_path = self.create_scripts(exp_id, test_run)
+        run_folder = get_run_folder(self.results_folder, exp_id)
+        self.show_info(run_folder)
+
+        script_list, script2blob, blob_path = self.create_scripts(exp_id, run_folder, test_run)
         self.execute_scripts(script_list, script2blob, blob_path)
     
     def define_paths(self, exp_id):
@@ -54,28 +63,27 @@ class Executor:
         self.systems_tmp_folder = path.join(self.environment.experiments_folder, PLANNER_COPIES_FOLDER)
         self.log_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
     
-    def create_scripts(self, exp_id: str, test_run: bool):
+    def create_scripts(self, exp_id: str, run_folder: str,test_run: bool):
         script_list = []
         scripts_setup(self.script_folder)
         
         blob = {}
-        blob_path = path.join(self.results_folder, EXPERIMENT_RUN_FOLDER.format(exp_id), 'blob.json')
+        blob_path = path.join(run_folder, 'blob.json')
         script2blob = {}
 
         for planner in self.environment.run_dictionary.keys():
             blob[planner.name] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
                 blob[planner.name][domain.name] = {}
-                self._create_script(planner, domain, exp_id, script_list, blob, blob_path, test_run, script2blob)
+                self._create_script(planner, domain, exp_id, run_folder, script_list, blob, blob_path, test_run, script2blob)
 
         with open(blob_path, 'w') as f:
             json.dump(blob, f, indent=4)
                 
         return script_list, script2blob, blob_path
   
-    def _create_script(self, planner: System, domain: Domain, exp_id: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool, script2blob: dict):
+    def _create_script(self, planner: System, domain: Domain, exp_id: str, run_folder: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool, script2blob: dict):
         planner_name = planner.get_name()
-        run_folder = get_run_folder(self.results_folder, exp_id)
         
         instances = domain.instances
         if test_run:

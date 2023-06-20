@@ -68,3 +68,18 @@ class Environment:
 
     def set_parallel_processes(self, parallel_processes: int):
         self.parallel_processes = parallel_processes
+
+    def get_info(self):
+        data = [
+            ["Environment", self.name],
+            ["Memory", self.memory],
+            ["Time", self.time],
+        ]
+        if self.qsub:
+            data.append(["Qsub", "True"])
+            data.append(["PPN", self.ppn])
+            data.append(["Priority", self.priority])
+        else:
+            data.append(["Multiprocessing", "True"])
+            data.append(["Parallel processes", 25, self.parallel_processes])
+        return data
