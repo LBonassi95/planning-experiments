@@ -15,10 +15,12 @@ from multiprocessing import Pool
 from tqdm import tqdm
 from planning_experiments.save_results import save_results
 
-def run_script(script: str):
-    #print(f'Running {script}')
-    os.system(f'chmod +x {script}')
-    os.system(script)
+def run_script(script_info: Tuple[str, str]):
+    script_name = script_info[0]
+    script = script_info[1]
+    subprocess.run(f'chmod +x {script}', shell=True)
+    subprocess.run({script}, shell=True)
+    return script_name
 
 
 class Executor:
@@ -184,17 +186,12 @@ class Executor:
             progress_bar.close()
             
         else:
-            scripts = [script for _, script in script_list]
-            progress_bar = tqdm(total=len(scripts), desc="Progress", unit="iteration")
-            results = []
+            scripts_infos = [(script_name, script) for script_name, script in script_list]
+            progress_bar = tqdm(total=len(scripts_infos), desc="Progress", unit="iteration")
             with Pool(self.environment.parallel_processes) as p:
-                # Use imap_unordered to get results asynchronously
-                for result in p.imap_unordered(run_script, scripts):
-                    results.append(result)
+                for script_name in p.imap_unordered(run_script, scripts_infos):
+                    planner, domain, instance = script2blob[script_name]
+                    save_results(blob_path, planner, domain, instance)
                     progress_bar.update(1)
 
-                # Close the progress bar
                 progress_bar.close()
-
-                # Process the results as needed
-                print("Results:", results)
