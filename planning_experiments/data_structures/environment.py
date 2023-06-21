@@ -8,7 +8,12 @@ import pkg_resources
 DEFAULT_MEM = 8000000
 DEFAULT_TIME = 1800
 
-ERROR_SYSTEM_ALREADY_ADDED = "System {} was already added to the environment"
+ERROR_SYSTEM_ALREADY_ADDED = '''
+System "{system}" was already added to the environment.
+If you want to run "{system}" multiple times, 
+please create a new environment or assing different names to the system.
+Example: define "{system}-1" and "{system}-2".
+'''
 
 
 class Environment:
@@ -33,8 +38,8 @@ class Environment:
 
     def add_run(self, system: System, domains: List[Domain]):
 
-        if self.run_dictionary.get(system, None) != None:
-            raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system))
+        if self.run_dictionary.get(system, None) is not None:
+            raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system=system))
         else:
             self.run_dictionary[system] = {}
             self.run_dictionary[system][DOMAINS] = domains
@@ -72,8 +77,8 @@ class Environment:
     def get_info(self):
         data = [
             ["Environment", self.name],
-            ["Memory", self.memory],
-            ["Time", self.time],
+            ["Memory", f'{self.memory} KB'],
+            ["Time", f'{self.time}s'],
         ]
         if self.qsub:
             data.append(["Qsub", "True"])
@@ -81,5 +86,5 @@ class Environment:
             data.append(["Priority", self.priority])
         else:
             data.append(["Multiprocessing", "True"])
-            data.append(["Parallel processes", 25, self.parallel_processes])
+            data.append(["Parallel processes", self.parallel_processes])
         return data

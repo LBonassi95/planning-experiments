@@ -79,6 +79,9 @@ class Executor:
 
         with open(blob_path, 'w') as f:
             json.dump(blob, f, indent=4)
+        
+        # Make scripts executable
+        subprocess.run(f'chmod +x {self.script_folder}/*', shell=True)
                 
         return script_list, script2blob, blob_path
   
