@@ -15,6 +15,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 from tabulate import tabulate
 from planning_experiments.save_results import save_results
+from planning_experiments.summary import create_summary
 
 def run_script(script_info: Tuple[str, str]):
     script_name = script_info[0]
@@ -55,7 +56,7 @@ class Executor:
         self.show_info(run_folder)
 
         script_list, script2blob, blob_path = self.create_scripts(exp_id, run_folder, test_run)
-        self.execute_scripts(script_list, script2blob, blob_path)
+        self.execute_scripts(script_list, script2blob, run_folder, blob_path)
     
     def define_paths(self, exp_id):
         self.script_folder = path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER, self.environment.name, exp_id)
@@ -156,7 +157,7 @@ class Executor:
             return False
 
     
-    def execute_scripts(self, script_list: List[str], script2blob: dict, blob_path: str):
+    def execute_scripts(self, script_list: List[str], script2blob: dict, run_folder: str, blob_path: str):
         # Qsub logs setup
         os.makedirs(self.log_folder)
         #################
@@ -180,7 +181,7 @@ class Executor:
             
 
             running_jobs = set(job_infos)
-            progress_bar = tqdm(total=len(running_jobs), desc="Progress", unit="iteration")
+            progress_bar = tqdm(total=len(running_jobs), desc="Progress", unit="iteration", colour='green')
             while len(running_jobs) > 0:
                 job_completed_so_far = filter(self.is_completed, running_jobs)
                 job_completed_so_far = list(job_completed_so_far)
@@ -198,7 +199,7 @@ class Executor:
             
         else:
             scripts_infos = [(script_name, script) for script_name, script in script_list]
-            progress_bar = tqdm(total=len(scripts_infos), desc="Progress", unit="iteration")
+            progress_bar = tqdm(total=len(scripts_infos), desc="Progress", unit="iteration", colour='green')
             with Pool(self.environment.parallel_processes) as p:
                 for script_name in p.imap_unordered(run_script, scripts_infos):
                     planner, domain, instance = script2blob[script_name]
@@ -206,3 +207,7 @@ class Executor:
                     progress_bar.update(1)
 
                 progress_bar.close()
+        
+        # Create summary
+        summary_path = path.join(run_folder, 'summary.csv')
+        create_summary(blob_path, summary_path)
