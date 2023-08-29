@@ -73,9 +73,10 @@ class Executor:
         script2blob = {}
 
         for planner in self.environment.run_dictionary.keys():
-            blob[planner.name] = {}
+            assert isinstance(planner, System)
+            blob[planner.get_name()] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
-                blob[planner.name][domain.name] = {}
+                blob[planner.get_name()][domain.name] = {}
                 self._create_script(planner, domain, exp_id, run_folder, script_list, blob, blob_path, test_run, script2blob)
 
         with open(blob_path, 'w') as f:
@@ -113,13 +114,13 @@ class Executor:
             planner_exe = planner.get_cmd(path2domain, path2instance, path2solution)
 
             # Collecting info #################
-            blob[planner.name][domain.name][instance_name] = {}
-            blob[planner.name][domain.name][instance_name][DOMAIN_PATH] = path2domain
-            blob[planner.name][domain.name][instance_name][INSTANCE_PATH] = path2instance
-            blob[planner.name][domain.name][instance_name][SOLUTION_PATH] = solution_folder
-            blob[planner.name][domain.name][instance_name][STDE] = stde
-            blob[planner.name][domain.name][instance_name][STDO] = stdo
-            blob[planner.name][domain.name][instance_name][PLANNER_EXE] = planner_exe
+            blob[planner_name][domain.name][instance_name] = {}
+            blob[planner_name][domain.name][instance_name][DOMAIN_PATH] = path2domain
+            blob[planner_name][domain.name][instance_name][INSTANCE_PATH] = path2instance
+            blob[planner_name][domain.name][instance_name][SOLUTION_PATH] = solution_folder
+            blob[planner_name][domain.name][instance_name][STDE] = stde
+            blob[planner_name][domain.name][instance_name][STDO] = stdo
+            blob[planner_name][domain.name][instance_name][PLANNER_EXE] = planner_exe
             ###################################
             
             copy_planner_dst, planner_source = manage_planner_copy(
@@ -144,7 +145,7 @@ class Executor:
             write_script(inner_script, script_name, self.script_folder)
             write_script(outer_script, f'run_{script_name}', self.script_folder)
             script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, f'run_{script_name}')))
-            script2blob[script_name.replace('.sh', '')] = (planner.name, domain.name, instance_name)
+            script2blob[script_name.replace('.sh', '')] = (planner_name, domain.name, instance_name)
 
 
     
