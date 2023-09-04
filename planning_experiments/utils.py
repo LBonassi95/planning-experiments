@@ -4,6 +4,7 @@ from planning_experiments.constants import *
 from planning_experiments.data_structures import *
 from typing import Tuple
 import pkg_resources
+import subprocess
 
 
 def scripts_setup(script_folder):
@@ -42,9 +43,7 @@ def write_script(shell_script, script_name, script_dst):
     script_path = path.join(script_dst, script_name)
     with open(script_path, 'w') as output_writer:
         output_writer.write(shell_script)
-    os.system(f'chmod +x {script_path}')
-
 
 def delete_old_folder(folder: str):
     if path.isdir(folder):
-        os.system(RM_CMD.format(folder))
+        subprocess.run(RM_CMD.format(folder), shell=True)

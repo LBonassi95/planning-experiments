@@ -14,7 +14,12 @@ class System:
         raise NotImplementedError
 
     def __hash__(self) -> int:
-        return hash(self.get_name())
+        return hash((self.__class__, self.get_name()))
+    
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, System):
+            return False
+        return self.__hash__() == o.__hash__()
     
     def __repr__(self) -> str:
         return self.get_name()
