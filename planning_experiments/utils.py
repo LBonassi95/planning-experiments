@@ -35,8 +35,7 @@ def manage_planner_copy(systems_tmp_folder: str, name: str, planner: System, dom
     copy_planner_dst = path.join(systems_tmp_folder,
                                  'copy_{name}_{planner}_{domain}_{instance}_{exp_id}'
                                  .format(name=name, planner=planner.get_name(), domain=domain, instance=instance, exp_id=exp_id))
-    planner_source = path.join(planner.get_path())
-    return copy_planner_dst, planner_source
+    return copy_planner_dst
     
 
 def write_script(shell_script, script_name, script_dst):

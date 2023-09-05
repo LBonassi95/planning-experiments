@@ -1,10 +1,8 @@
 import os
 import os.path as path
-import sys
-import random
 import datetime
 from planning_experiments.constants import *
-from planning_experiments.data_structures.environment import Domain, Environment, System
+from planning_experiments.data_structures.environment import Domain, Environment, System, ExperimentMode
 from planning_experiments.script_builder import ScriptBuilder
 from planning_experiments.utils import *
 from typing import List
@@ -33,7 +31,7 @@ class Executor:
         self.script_folder = None
         self.results_folder = None
         self.systems_tmp_folder = None
-        self.log_folder = None
+        self.qsub_logs_folder = None
     
     def show_info(self, run_folder: str):
         data = self.environment.get_info()
@@ -41,16 +39,14 @@ class Executor:
         print(LOGO)
         print(tabulate(data, headers=["Infos", ""], tablefmt="fancy_grid"))
     
-    def run_experiments(self, test_run: bool = False):
+    def run_experiments(self, test_run: bool = False, cleanup: bool = True):
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
         self.define_paths(exp_id)
 
-        if self.environment.clean_systems:
+        if cleanup:
             delete_old_folder(self.systems_tmp_folder)
-        if self.environment.clean_scripts:
             delete_old_folder(path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER))
-        if self.environment.clean_logs:
-            delete_old_folder(self.log_folder)
+            delete_old_folder(self.qsub_logs_folder)
 
         run_folder = get_run_folder(self.results_folder, exp_id)
         self.show_info(run_folder)
@@ -62,7 +58,7 @@ class Executor:
         self.script_folder = path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER, self.environment.name, exp_id)
         self.results_folder = path.join(self.environment.experiments_folder, self.environment.RESULTS_FOLDER, self.environment.name)
         self.systems_tmp_folder = path.join(self.environment.experiments_folder, PLANNER_COPIES_FOLDER)
-        self.log_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
+        self.qsub_logs_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
     
     def create_scripts(self, exp_id: str, run_folder: str,test_run: bool):
         script_list = []
@@ -112,11 +108,15 @@ class Executor:
             stde = path.abspath(path.join(instance_folder, f'err_{domain.name}_{instance_name}.txt'))
             stdo = path.abspath(path.join(instance_folder, f'out_{domain.name}_{instance_name}.txt'))
             
-            copy_planner_dst, planner_source = manage_planner_copy(
+            copy_planner_dst = manage_planner_copy(
                 self.systems_tmp_folder, self.environment.name, planner, domain, instance_name, exp_id)
             
-            planner_exe = planner.get_cmd(copy_planner_dst, path2domain, path2instance, path2solution)
+            assert path.isdir(planner.get_path())
+            
+            planner_basename = path.basename(planner.get_path())
 
+            temporary_planner_path = path.join(copy_planner_dst, planner_basename)
+            planner_exe = planner.get_cmd(temporary_planner_path, path2domain, path2instance, path2solution)
 
             # Collecting info #################
             blob[planner_name][domain.name][instance_name] = {}
@@ -135,7 +135,7 @@ class Executor:
                                     instance_name=instance_name,
                                     results=blob_path,
                                     system_dst=path.abspath(copy_planner_dst),
-                                    time=str(self.environment.time),
+                                    time=str(self.environment.timeout),
                                     memory=str(self.environment.memory),
                                     system_exe=planner_exe,
                                     stdo=stdo, 
@@ -162,21 +162,21 @@ class Executor:
 
     
     def execute_scripts(self, script_list: List[str], script2blob: dict, run_folder: str, blob_path: str):
-        # Qsub logs setup
-        os.makedirs(self.log_folder)
-        #################
 
-        if self.environment.qsub:
+        if self.environment.mode == ExperimentMode.QSUB:
+            # Qsub logs setup
+            os.makedirs(self.qsub_logs_folder)
+            #################
             
             job_infos = []
 
             for (script_name, script) in script_list:
                 qsub_cmd = QSUB_TEMPLATE
-                stdo = path.join(self.log_folder, 'log_{}'.format(script_name))
-                stde = path.join(self.log_folder, 'err_{}'.format(script_name))
+                stdo = path.join(self.qsub_logs_folder, 'qsub_log_{}'.format(script_name))
+                stde = path.join(self.qsub_logs_folder, 'qsub_err_{}'.format(script_name))
                 qsub_cmd = qsub_cmd\
-                    .replace(PPN_QSUB, str(self.environment.ppn))\
-                    .replace(PRIORITY_QSUB, str(self.environment.priority))\
+                    .replace(PPN_QSUB, str(self.environment.qsub_ppn))\
+                    .replace(PRIORITY_QSUB, str(self.environment.qsub_priority))\
                     .replace(SCRIPT_QSUB, script)\
                     .replace(LOG_QSUB, stdo)\
                     .replace(ERR_QSUB, stde)
@@ -202,6 +202,7 @@ class Executor:
             progress_bar.close()
             
         else:
+            assert self.environment.mode == ExperimentMode.MULTIPROCESSING
             scripts_infos = [(script_name, script) for script_name, script in script_list]
             progress_bar = tqdm(total=len(scripts_infos), desc="Progress", unit="iteration", colour='green')
             with Pool(self.environment.parallel_processes) as p:

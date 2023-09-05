@@ -38,7 +38,6 @@ def create_summary(blob_path, output_path):
 
                 if blob[planner][domain][instance][NUM_SOLUTIONS] > 0:
                     record[SOL] = True
-                    assert len(blob[planner][domain][instance][SOLUTIONS]) == 1
                 records.append(record)
 
     df = pd.DataFrame.from_records(records)

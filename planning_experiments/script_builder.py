@@ -1,5 +1,5 @@
 from os import path
-from planning_experiments.data_structures.environment import Environment, System
+from planning_experiments.data_structures.environment import Environment, System, ExperimentMode
 import pkg_resources
 
 class ScriptBuilder:
@@ -48,7 +48,7 @@ class ScriptBuilder:
         self.manage_dependencies()
         self.outer_script.append(f'cd {self.system_dst}')
 
-        if self.enviorment.qsub:
+        if self.enviorment.mode == ExperimentMode.QSUB:
             self.outer_script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}')
         else:
             self.outer_script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}')
@@ -65,7 +65,7 @@ class ScriptBuilder:
 
         
         #################
-        if self.enviorment.delete_systems:
+        if self.enviorment.delete_temporary_systems:
             self.outer_script.append(f'rm -r -f {self.system_dst}')
         
         # save_results_path = pkg_resources.resource_filename(__name__, f'./bin/save_results.py')

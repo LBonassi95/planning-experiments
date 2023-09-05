@@ -6,9 +6,6 @@ import click
 from os import path
 import pkg_resources
 
-PDDL_PATH = pkg_resources.resource_filename(__name__, 'pddl/')
-FD_PATH = path.join(pkg_resources.resource_filename(__name__, 'systems/'), 'fast-downward')
-
 
 class FDWrapper(Planner):
 
@@ -16,7 +13,12 @@ class FDWrapper(Planner):
         super().__init__(name, src_path)
         self.search_params = search_params
 
-    def get_cmd(self, tmp_planner_path, domain_path, instance_path, solution_path):
+    def get_cmd(self, 
+                tmp_planner_path, # PATH TO THE FOLDER CONTAINING THE PLANNER
+                domain_path, # PATH TO THE DOMAIN FILE
+                instance_path, # PATH TO THE INSTANCE FILE
+                solution_path # PATH POINTING TO THE SOLUTIION FOLDER
+                ):
         return f'{tmp_planner_path}/fast-downward.py --plan-file {solution_path} {domain_path} {instance_path} --search {self.search_params}'
     
 
@@ -31,20 +33,39 @@ class LamaWrapper(Planner):
 
 def main():
 
-    experiments_folder = pkg_resources.resource_filename(__name__, 'CLASSICAL_PLANNING_EXAMPLE')
+    experiments_folder = pkg_resources.resource_filename(__name__, 'RESULTS') # FOLDER CONTAINING RESULTS AND BOOKEEPING DATA
 
-    env = Environment(experiments_folder, name='TEST')
+    env = Environment(experiments_folder=experiments_folder, 
+                      name = 'CLASSICAL_PLANNING_TEST', # NAME OF THIS EXPERIMENT
+                      timeout = 20, # MAXIMUM RUNTIME IN SEC
+                      memory = 8000000, # MAXIMUM MEMORY IN KB
+                      delete_temporary_systems=True, # AUTOMATICALLY DELETE COPIES OF THE SYSTEMS
+                      parallel_processes = 8, # NUMBER OF PARALLEL PROCESSES FOR THIS EXPERIMENT
+                      mode = ExperimentMode.MULTIPROCESSING # USE PYTHON MULTIPROCESSING TO HANDLE THE PARALLEL PROCESSES
+                      ) 
+    
+    pddl_path = pkg_resources.resource_filename(__name__, 'pddl/')
+    fast_downward_src_folder = path.join(pkg_resources.resource_filename(__name__, 'systems/'), 'fast-downward')
+    
+    # INSTANTIATE THE PLANNERS
+    astar_lmcut = FDWrapper('astar_lmcut', fast_downward_src_folder, search_params='"astar(lmcut())"')
+    lama = LamaWrapper('lama', fast_downward_src_folder)
 
-    astar_lmcut = FDWrapper('astar_lmcut', FD_PATH, search_params='"astar(lmcut())"')
-    lama = LamaWrapper('lama', FD_PATH)
+    # INSTAINTIATE THE OBJECTS REPRESENTING THE PDDL DOMAINS
+    # THE LIBRARY ASSUMES THAT THE PDDL FILES ARE ORGANIZED AS FOLLOWS:
+    # domain_folder/
+    #   - domain.pddl
+    #   - {INSTANCE_X}.pddl
+    #   - {INSTANCE_Y}.pddl
+    #   - etc ...
+    blocksworld = Domain('blocksworld', path.join(pddl_path, 'blocksworld'))
+    rovers = Domain('rovers', path.join(pddl_path, 'rovers'))
 
-    blocksworld = Domain('blocksworld', path.join(PDDL_PATH, 'blocksworld'))
-    rovers = Domain('rovers', path.join(PDDL_PATH, 'rovers'))
-
+    # ADD THE RUN TO THE ENVIRONMENT
     env.add_run(system=astar_lmcut, domains=[blocksworld, rovers])
     env.add_run(system=lama, domains=[blocksworld, rovers])
-    env.set_time(20)
 
+    # RUN THE EXPERIMENTS
     executor = Executor(env)
     executor.run_experiments()
 
