@@ -111,7 +111,12 @@ class Executor:
             path2solution = path.join(solution_folder, solution_name)
             stde = path.abspath(path.join(instance_folder, f'err_{domain.name}_{instance_name}.txt'))
             stdo = path.abspath(path.join(instance_folder, f'out_{domain.name}_{instance_name}.txt'))
-            planner_exe = planner.get_cmd(path2domain, path2instance, path2solution)
+            
+            copy_planner_dst, planner_source = manage_planner_copy(
+                self.systems_tmp_folder, self.environment.name, planner, domain, instance_name, exp_id)
+            
+            planner_exe = planner.get_cmd(copy_planner_dst, path2domain, path2instance, path2solution)
+
 
             # Collecting info #################
             blob[planner_name][domain.name][instance_name] = {}
@@ -122,9 +127,7 @@ class Executor:
             blob[planner_name][domain.name][instance_name][STDO] = stdo
             blob[planner_name][domain.name][instance_name][PLANNER_EXE] = planner_exe
             ###################################
-            
-            copy_planner_dst, planner_source = manage_planner_copy(
-                self.systems_tmp_folder, self.environment.name, planner, domain, instance_name, exp_id)
+
 
             builder = ScriptBuilder(self.environment, 
                                     system=planner,

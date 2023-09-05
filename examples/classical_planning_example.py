@@ -12,21 +12,21 @@ FD_PATH = path.join(pkg_resources.resource_filename(__name__, 'systems/'), 'fast
 
 class FDWrapper(Planner):
 
-    def __init__(self, name: str, planner_path: str, search_params: str = None) -> None:
-        super().__init__(name, planner_path)
+    def __init__(self, name: str, src_path: str, search_params: str = None) -> None:
+        super().__init__(name, src_path)
         self.search_params = search_params
 
-    def get_cmd(self, domain_path, instance_path, solution_path):
-        return f'./fast-downward/fast-downward.py --plan-file {solution_path} {domain_path} {instance_path} --search {self.search_params}'
+    def get_cmd(self, tmp_planner_path, domain_path, instance_path, solution_path):
+        return f'{tmp_planner_path}/fast-downward.py --plan-file {solution_path} {domain_path} {instance_path} --search {self.search_params}'
     
 
 class LamaWrapper(Planner):
 
-    def __init__(self, name: str, planner_path: str) -> None:
-        super().__init__(name, planner_path)
+    def __init__(self, name: str, src_path: str) -> None:
+        super().__init__(name, src_path)
 
-    def get_cmd(self, domain_path, instance_path, solution_path):
-        return f'./fast-downward/fast-downward.py --alias lama --plan-file {solution_path} {domain_path} {instance_path}'
+    def get_cmd(self, tmp_planner_path, domain_path, instance_path, solution_path):
+        return f'{tmp_planner_path}/fast-downward.py --alias lama --plan-file {solution_path} {domain_path} {instance_path}'
 
 
 def main():
