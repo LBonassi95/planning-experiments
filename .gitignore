@@ -6,6 +6,6 @@ logs
 #systems
 #pddl_benchmarks/
 *.egg-info
-examples/systems
 examples/CLASSICAL_PLANNING_EXAMPLE
+examples/HELLO_WORLD
 build
