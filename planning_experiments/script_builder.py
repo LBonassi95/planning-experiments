@@ -48,11 +48,13 @@ class ScriptBuilder:
         self.manage_dependencies()
         self.outer_script.append(f'cd {self.system_dst}')
 
-        if self.enviorment.qsub:
-            self.outer_script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}')
-        else:
-            self.outer_script.append(f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}')
+        exec_cmd = f"{path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}"
 
+        if self.time != "None":
+            exec_cmd = f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time}' + exec_cmd
+
+        self.outer_script.append(exec_cmd)
+       
         ## INNER SCRIPT ##
         self.inner_script.append(self.BASH)
         
