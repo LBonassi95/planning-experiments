@@ -51,7 +51,7 @@ class ScriptBuilder:
         exec_cmd = f"{path.join(self.script_folder, self.script_name)} 2>> {self.stde} 1>> {self.stdo}"
 
         if self.time != "None":
-            exec_cmd = f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time}' + exec_cmd
+            exec_cmd = f'/usr/bin/time -f "Total Runtime: %e" timeout --signal=HUP {self.time} {exec_cmd}'
 
         self.outer_script.append(exec_cmd)
        
