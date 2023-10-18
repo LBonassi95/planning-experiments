@@ -4,14 +4,15 @@ import numpy as np
 
 
 class SurvivalPlot:
-
-    def __init__(self, timeout: int = 1800,
-                 fontsize: int = 12,
-                 num_points: int = 1000,
-                 logscale: bool = False,
-                 legends_kwargs: dict = {},
-                 plot_kwargs: dict = {}) -> None:
-
+    def __init__(
+        self,
+        timeout: int = 1800,
+        fontsize: int = 12,
+        num_points: int = 1000,
+        logscale: bool = False,
+        legends_kwargs: dict = {},
+        plot_kwargs: dict = {},
+    ) -> None:
         self.timeout = timeout
         self.num_points = num_points
         self.logscale = logscale
@@ -19,13 +20,13 @@ class SurvivalPlot:
         self.legends_kwargs = legends_kwargs
         self.plot_kwargs = plot_kwargs
 
-    def plot(self, df) -> None:
+    def plot(self, df: pd.DataFrame, output_folder: str = None) -> None:
         df = df[df[SOL] == True]
         plt.figure(figsize=(6, 4), dpi=100, facecolor="w", edgecolor="k")
 
         if self.logscale:
             x = np.linspace(1, self.timeout, num=self.num_points)
-            plt.xscale('log')
+            plt.xscale("log")
         else:
             x = np.linspace(1, self.timeout, num=self.num_points)
 
@@ -47,5 +48,7 @@ class SurvivalPlot:
         plt.legend(legend, fontsize=self.fontsize, **self.legends_kwargs)
         plt.xlabel(r"Planning time", fontsize=self.fontsize)
         plt.ylabel(r"Coverage", fontsize=self.fontsize)
-        plt.show()
+        plt.show() if output_folder is None else plt.savefig(
+            output_folder / f"coverage.png"
+        )
         plt.close()
