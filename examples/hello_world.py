@@ -18,7 +18,7 @@ class MyPlannerWrapper(Planner):
         self.heuristic = heuristic
 
     def get_cmd(self, domain_path, instance_path, solution_path):
-        return f'python ./MyPlanner/my_planner.py {self.search_engine} {self.heuristic} {domain_path} {instance_path} {solution_path}'
+        return f'python3 ./MyPlanner/my_planner.py {self.search_engine} {self.heuristic} {domain_path} {instance_path} {solution_path}'
     
 
 def main():
@@ -33,6 +33,7 @@ def main():
 
     env.add_run(system=my_planner, domains=[blocksworld, rovers])
     env.set_time(None)
+    env.set_memory(None)
     executor = Executor(env)
     executor.run_experiments()
 
