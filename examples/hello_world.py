@@ -34,7 +34,7 @@ def main():
     env.add_run(system=my_planner, domains=[blocksworld, rovers])
     env.set_time(None)
     env.set_memory(None)
-    executor = Executor(env)
+    executor = Executor(env,search_engine="astar", heuristic="hmax")
     executor.run_experiments()
 
 if __name__ == "__main__":

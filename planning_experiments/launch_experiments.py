@@ -27,13 +27,15 @@ def run_script(script_info: Tuple[str, str]):
 
 class Executor:
 
-    def __init__(self, environment: Environment, short_name: str = '') -> None:
+    def __init__(self, environment: Environment, search_engine:str, heuristic:str, short_name: str = '') -> None:
         self.environment = environment
         self.short_name = short_name
         self.script_folder = None
         self.results_folder = None
         self.systems_tmp_folder = None
         self.log_folder = None
+        self.search_engine=search_engine
+        self.heuristic=heuristic
     
     def show_info(self, run_folder: str):
         data = self.environment.get_info()
@@ -64,7 +66,7 @@ class Executor:
         self.systems_tmp_folder = path.join(self.environment.experiments_folder, PLANNER_COPIES_FOLDER)
         self.log_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
     
-    def create_scripts(self, exp_id: str, run_folder: str,test_run: bool):
+    def create_scripts(self, exp_id: str, run_folder: str, test_run: bool):
         script_list = []
         scripts_setup(self.script_folder)
         
@@ -121,6 +123,8 @@ class Executor:
             blob[planner_name][domain.name][instance_name][STDE] = stde
             blob[planner_name][domain.name][instance_name][STDO] = stdo
             blob[planner_name][domain.name][instance_name][PLANNER_EXE] = planner_exe
+            blob[planner_name][domain.name][instance_name][SEARCH_ENGINE]=self.search_engine
+            blob[planner_name][domain.name][instance_name][HEURISTIC]=self.heuristic
             ###################################
             
             copy_planner_dst, planner_source = manage_planner_copy(
