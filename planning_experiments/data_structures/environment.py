@@ -21,7 +21,7 @@ class Environment:
     SCRIPTS_FOLDER = 'scripts'
     RESULTS_FOLDER = 'results'
 
-    def __init__(self, experiments_folder: str, name: str) -> None:
+    def __init__(self, parameters: list, experiments_folder: str, name: str) -> None:
         self.experiments_folder = experiments_folder
         self.run_dictionary = {}
         self.name = name
@@ -35,6 +35,7 @@ class Environment:
         self.priority = 500
         self.qsub = False
         self.parallel_processes = 8
+        self.parameters = parameters
 
     def add_run(self, system: System, domains: List[Domain]):
 
@@ -88,3 +89,9 @@ class Environment:
             data.append(["Multiprocessing", "True"])
             data.append(["Parallel processes", self.parallel_processes])
         return data
+    
+    def getParams(self):
+        params = ", ".join(self.parameters)
+        return params
+
+  

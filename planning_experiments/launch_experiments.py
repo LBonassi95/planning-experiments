@@ -123,8 +123,7 @@ class Executor:
             blob[planner_name][domain.name][instance_name][STDE] = stde
             blob[planner_name][domain.name][instance_name][STDO] = stdo
             blob[planner_name][domain.name][instance_name][PLANNER_EXE] = planner_exe
-            blob[planner_name][domain.name][instance_name][SEARCH_ENGINE]=self.search_engine
-            blob[planner_name][domain.name][instance_name][HEURISTIC]=self.heuristic
+            blob[planner_name][domain.name][instance_name][PARAMS]=self.environment.getParams()
             ###################################
             
             copy_planner_dst, planner_source = manage_planner_copy(

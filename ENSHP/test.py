@@ -12,29 +12,26 @@ MY_PLANNER_PATH = path.join(pkg_resources.resource_filename(__name__, 'systems/'
 
 class MyPlannerWrapper(Planner):
 
-    def __init__(self, name: str, planner_path: str, search_engine: str, heuristic: str) -> None:
+    def __init__(self, name: str, planner_path: str) -> None:
         super().__init__(name, planner_path)
-        self.search_engine = search_engine
-        self.heuristic = heuristic
 
     def get_cmd(self, domain_path, instance_path, solution_path):
-        return f'python3 ./MyPlanner/my_planner.py {self.search_engine} {self.heuristic} {domain_path} {instance_path} {solution_path}'
+        return f'enhsp {self.search_engine} {self.heuristic} {domain_path} {instance_path} {solution_path}'
     
 
 def main():
-    results_folder = pkg_resources.resource_filename(__name__, 'HELLO_WORLD')
+    results_folder = pkg_resources.resource_filename(__name__, 'TEST_RESULT')
     params=["astar","hmax"]
     env = Environment(params,results_folder, name='TEST')
     
     my_planner = MyPlannerWrapper('my_planner', MY_PLANNER_PATH, search_engine="astar", heuristic="hmax")
 
-    blocksworld = Domain('blocksworld', path.join(PDDL_PATH, 'blocksworld'))
-    rovers = Domain('rovers', path.join(PDDL_PATH, 'rovers'))
+    car_non_linear = Domain('car-non-linear', path.join(PDDL_PATH, 'car-non-linear'))
 
-    env.add_run(system=my_planner, domains=[blocksworld, rovers])
+    env.add_run(system=my_planner, domains=[car_non_linear])
     env.set_time(None)
     env.set_memory(None)
-    executor = Executor(env)
+    executor = Executor(env,search_engine="astar", heuristic="hmax")
     executor.run_experiments()
 
 if __name__ == "__main__":

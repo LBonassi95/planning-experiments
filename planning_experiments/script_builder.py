@@ -1,6 +1,7 @@
 from os import path
 from planning_experiments.data_structures.environment import Environment, System
 import pkg_resources
+import platform
 
 class ScriptBuilder:
 
@@ -38,6 +39,7 @@ class ScriptBuilder:
         self.domain_name = domain_name
         self.instance_name = instance_name
         self.results = results
+        self.command= self.defineOS()
 
     def get_script(self):
         self.outer_script.append(self.BASH)
@@ -93,4 +95,13 @@ class ScriptBuilder:
             return cmd_chain
         else:
             return [self.system_exe]
-
+    
+    def defineOS(self):
+        so = platform.system()
+        if so == "Darwin":
+            self.command = "phyton3"
+        else:
+            if so == "Windows":
+                self.command = "phyton"
+            else:
+                self.command == "phyton"

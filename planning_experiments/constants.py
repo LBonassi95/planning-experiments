@@ -49,6 +49,7 @@ VAL_INSTANCE_PATH = 'val_instance_path'
 VALIDATION = 'validation'
 SEARCH_ENGINE="search_engine"
 HEURISTIC="heuristic"
+PARAMS="parameters"
 
 
 LOGO = """
