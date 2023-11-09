@@ -27,6 +27,7 @@ class System:
     def get_dependencies(self) -> List[str]:
         raise NotImplementedError
 
+
 class Planner(System):
 
     def __init__(self, name: str, planner_path: str) -> None:
@@ -65,3 +66,4 @@ class Compiler(Planner):
         
     def make_shell_chain(self) -> str:
         raise NotImplementedError
+    
