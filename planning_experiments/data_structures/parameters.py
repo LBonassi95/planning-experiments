@@ -10,6 +10,14 @@ class Parameters:
     
     def get_search_engine(self) -> str:
         return self.search_engine
+    
+    def get_others(self) -> str:
+         params = ", ".join(self.parameters)
+         return params
 
     def get_parameters(self) -> str: 
-        return
+        return "herustics: "+ self.heuristics + "search_enginge: " + self.search_engine + " others: " + self.get_others
+    
+
+
+   ##classe parameters generica con sottoclassi specifiche 

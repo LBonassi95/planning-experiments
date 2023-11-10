@@ -27,15 +27,13 @@ def run_script(script_info: Tuple[str, str]):
 
 class Executor:
 
-    def __init__(self, environment: Environment, search_engine:str, heuristic:str, short_name: str = '') -> None:
+    def __init__(self, environment: Environment, short_name: str = '') -> None:
         self.environment = environment
         self.short_name = short_name
         self.script_folder = None
         self.results_folder = None
         self.systems_tmp_folder = None
         self.log_folder = None
-        self.search_engine=search_engine
-        self.heuristic=heuristic
     
     def show_info(self, run_folder: str):
         data = self.environment.get_info()

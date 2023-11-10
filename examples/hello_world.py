@@ -8,6 +8,7 @@ import pkg_resources
 
 PDDL_PATH = pkg_resources.resource_filename(__name__, 'pddl/')
 MY_PLANNER_PATH = path.join(pkg_resources.resource_filename(__name__, 'systems/'), 'MyPlanner')
+ENSHP_PATH = "/Users/mattiatanchis/ENHSP-Public"
 
 
 class MyPlannerWrapper(Planner):
@@ -19,14 +20,22 @@ class MyPlannerWrapper(Planner):
 
     def get_cmd(self, domain_path, instance_path, solution_path):
         return f'python3 ./MyPlanner/my_planner.py {self.search_engine} {self.heuristic} {domain_path} {instance_path} {solution_path}'
-    
+
+
+
+class ENSHP_PlannerWrapper(Planner): 
+     def __init__(self, name: str, planner_path: str) -> None:
+        super().__init__(name, planner_path)
+     
+     def get_cmd(self, domain_path, instance_path, solution_path):
+        return f'java -jar ./ENHSP-Public/enhsp.jar  -o {domain_path} -f {instance_path} -sp {solution_path}'
 
 def main():
     results_folder = pkg_resources.resource_filename(__name__, 'HELLO_WORLD')
     params=["astar","hmax"]
     env = Environment(params,results_folder, name='TEST')
     
-    my_planner = MyPlannerWrapper('my_planner', MY_PLANNER_PATH, search_engine="astar", heuristic="hmax")
+    my_planner =ENSHP_PlannerWrapper('my_planner', ENSHP_PATH)
 
     blocksworld = Domain('blocksworld', path.join(PDDL_PATH, 'blocksworld'))
     rovers = Domain('rovers', path.join(PDDL_PATH, 'rovers'))

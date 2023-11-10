@@ -33,7 +33,6 @@ class Planner(System):
     def __init__(self, name: str, planner_path: str) -> None:
         super().__init__(name)
         self.planner_path = planner_path
-
     def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
         raise NotImplementedError
     
