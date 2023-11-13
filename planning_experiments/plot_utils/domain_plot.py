@@ -49,6 +49,6 @@ class DomainPlot:
         plt.title(domain)
         plt.grid()
         plt.show() if output_folder is None else plt.savefig(
-            output_folder / f"{domain}.png"
+            output_folder / f"{domain}.png", bbox_inches='tight'
         )
         plt.close()
