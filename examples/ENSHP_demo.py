@@ -23,8 +23,9 @@ def main():
 
     planner = ENSHP_PlannerWrapper('my_ENSHP_planner',ENSHP_PATH)
     Depots_Numeric = Domain('Depots_Numeric',path.join(PDDL_PATH, 'Depots-Numeric'))
+    fnCounters = Domain('fnCounters',path.join(PDDL_PATH,'fn-counters'))
 
-    env.add_run(system=planner,  domains=[Depots_Numeric] )
+    env.add_run(system=planner,  domains=[Depots_Numeric,fnCounters] )
     env.set_time(None)
     env.set_memory(None)
     executor = Executor(env)
