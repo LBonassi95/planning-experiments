@@ -27,13 +27,14 @@ def run_script(script_info: Tuple[str, str]):
 
 class Executor:
 
-    def __init__(self, environment: Environment, short_name: str = '') -> None:
+    def __init__(self, environment: Environment, planner: Planner,short_name: str = '') -> None:
         self.environment = environment
         self.short_name = short_name
         self.script_folder = None
         self.results_folder = None
         self.systems_tmp_folder = None
         self.log_folder = None
+        self.planner=planner
     
     def show_info(self, run_folder: str):
         data = self.environment.get_info()
@@ -121,7 +122,7 @@ class Executor:
             blob[planner_name][domain.name][instance_name][STDE] = stde
             blob[planner_name][domain.name][instance_name][STDO] = stdo
             blob[planner_name][domain.name][instance_name][PLANNER_EXE] = planner_exe
-            blob[planner_name][domain.name][instance_name][PARAMS]=self.environment.getParams()
+            blob[planner_name][domain.name][instance_name][PARAMS]=self.planner.get_params()
             ###################################
             
             copy_planner_dst, planner_source = manage_planner_copy(

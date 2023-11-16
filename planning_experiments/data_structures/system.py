@@ -1,4 +1,5 @@
 from typing import List
+from  planning_experiments.data_structures.parameters import Parameters
 
 class System:
     def __init__(self, name: str) -> None:
@@ -30,9 +31,11 @@ class System:
 
 class Planner(System):
 
-    def __init__(self, name: str, planner_path: str) -> None:
+    def __init__(self, name: str, planner_path: str, params:Parameters) -> None:
         super().__init__(name)
         self.planner_path = planner_path
+        self.params = params
+
     def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
         raise NotImplementedError
     
@@ -41,6 +44,10 @@ class Planner(System):
     
     def get_dependencies(self) -> List[str]:
         return [self.get_path()]
+    
+    def get_params(self) -> str:
+       return self.params.get_parameters()
+    
 
 # FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
 class Compiler(Planner):
