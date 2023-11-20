@@ -15,12 +15,12 @@ class ENSHP_PlannerWrapper(Planner):
     def __init__(self, name: str, planner_path: str, params:ENSHP_Param) -> None:
         super().__init__(name, planner_path, params)
     def get_cmd(self, domain_path, instance_path, solution_path):
-        return f'java -jar ./ENHSP-Public/enhsp.jar -h {self.params.get_heuristics()} -o {domain_path} -f {instance_path} -sp {solution_path}'
+        return f'java -jar ./ENHSP-Public/enhsp.jar -h {self.params.get_heuristics()} -s{self.params.get_search_engine()} -o {domain_path} -f {instance_path} -sp {solution_path}'
 
 
 def main():
     results_folder = pkg_resources.resource_filename(__name__, 'ENSHP_TEST_RESULTS')
-    params = ENSHP_Param('astar','hrmax',None)
+    params = ENSHP_Param('gbfs','hrmax',None)
     env = Environment (results_folder,name="ENSHP_TEST")
 
     planner = ENSHP_PlannerWrapper('my_ENSHP_planner',ENSHP_PATH,params)

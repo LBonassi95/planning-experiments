@@ -14,6 +14,10 @@ class ENSHP_Param(Parameters):
         self.other_parameters = other_parameters
     def get_heuristics(self) -> str :
         return self.heuristics    
+    
+    def get_search_engine(self) -> str:
+        return self.search_engine
+    
     def get_others(self) -> str:
          if(self.other_parameters is not None):
             params = ", ".join(self.parameters)
