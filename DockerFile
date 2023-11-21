@@ -1,0 +1,7 @@
+FROM python:3.9
+WORKDIR /code
+COPY <path_file_requirements.txt> /code/requirements.txt
+COPY  <path planning_experiments su host>  .
+RUN pip install  - -no-cache-dir  - -upgrade /code/requirements.txt
+RUN pip install .
+CMD [“python”, “path file da lanciare .py”]
