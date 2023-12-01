@@ -24,6 +24,7 @@ class Environment:
     def __init__(self, experiments_folder: str, name: str) -> None:
         self.experiments_folder = experiments_folder
         self.run_dictionary = {}
+        self.planner_count = {}
         self.name = name
         self.memory = DEFAULT_MEM
         self.time = DEFAULT_TIME
@@ -41,7 +42,7 @@ class Environment:
         if self.run_dictionary.get(system, None) is not None:
             raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system=system))
         else:
-            self.run_dictionary[system] = {}
+            self.run_dictionary[(system,0)] = { }
             self.run_dictionary[system][DOMAINS] = domains
     
     def set_memory(self, memory: int):

@@ -73,13 +73,13 @@ class Executor:
         blob_path = path.join(run_folder, 'blob.json')
         script2blob = {}
 
-        for planner in self.environment.run_dictionary.keys():
+        for planner,planner_id in self.environment.run_dictionary.keys():
             assert isinstance(planner, System)
             blob[planner.get_name()] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
                 blob[planner.get_name()][domain.name] = {}
                 self._create_script(planner, domain, exp_id, run_folder, script_list, blob, blob_path, test_run, script2blob)
-
+        #bisogna aggiungere id al nome del planner dove c'è get_name, con nome planner_id
         with open(blob_path, 'w') as f:
             json.dump(blob, f, indent=4)
         

@@ -20,7 +20,7 @@ class ENSHP_PlannerWrapper(Planner):
 
 def main():
     results_folder = pkg_resources.resource_filename(__name__, 'ENSHP_TEST_RESULTS')
-    params = ENSHP_Param('gbfs','hrmax',None)
+    params = ENSHP_Param('gbfs','hadd',None)
     env = Environment (results_folder,name="ENSHP_TEST")
 
     planner = ENSHP_PlannerWrapper('my_ENSHP_planner',ENSHP_PATH,params)

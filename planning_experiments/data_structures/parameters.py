@@ -6,6 +6,10 @@ class Parameters:
     def get_parameters(self) -> str: 
         raise NotImplementedError
     
+    def __eq__(self) -> bool:
+        raise NotImplementedError
+
+
 class ENSHP_Param(Parameters):
     def __init__(self, search_engine: str, heuristics: str, other_parameters: list[str]) -> None:
         super().__init__()
@@ -28,3 +32,4 @@ class ENSHP_Param(Parameters):
     def get_parameters(self) -> str:
         return "search_engine: " + self.search_engine +", heuristics: " + self.heuristics + ", others: " + self.get_others()
         
+    

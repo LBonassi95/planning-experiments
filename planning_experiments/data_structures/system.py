@@ -4,12 +4,15 @@ from  planning_experiments.data_structures.parameters import Parameters
 class System:
     def __init__(self, name: str) -> None:
         self.name = name
+      
 
     def get_cmd(self) -> List[str]:
         raise NotImplementedError
     
     def get_name(self) -> str:
         return self.name
+    
+  
     
     def get_path(self)-> str:
         raise NotImplementedError
