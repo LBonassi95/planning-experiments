@@ -4,16 +4,23 @@ from  planning_experiments.data_structures.parameters import Parameters
 class System:
     def __init__(self, name: str) -> None:
         self.name = name
-      
+        self.planner_id = None
 
     def get_cmd(self) -> List[str]:
         raise NotImplementedError
     
     def get_name(self) -> str:
         return self.name
+
+    def set_planner_id(self, planner_id: int) :
+        self.planner_id = planner_id 
     
-  
-    
+    def get_identifier(self):
+       return self.name+"_"+str(self.planner_id)
+
+    def get_id(self):
+        return self.planner_id
+
     def get_path(self)-> str:
         raise NotImplementedError
 

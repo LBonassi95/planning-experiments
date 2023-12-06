@@ -39,12 +39,18 @@ class Environment:
 
     def add_run(self, system: System, domains: List[Domain]):
 
-        if self.run_dictionary.get(system, None) is not None:
-            raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system=system))
+        if self.planner_count.get(system, None) is not None:
+            self.planner_count[system] += 1
+            system.set_planner_id(self.planner_count[system])
+            self.run_dictionary[(system,self.planner_count[system])] = { }
+            self.run_dictionary[(system,self.planner_count[system])][DOMAINS] = domains
         else:
-            self.run_dictionary[(system,0)] = { }
-            self.run_dictionary[system][DOMAINS] = domains
-    
+            self.planner_count[system] = 0
+            system.set_planner_id(self.planner_count[system])
+            self.run_dictionary[(system,self.planner_count[system])] = { }
+            self.run_dictionary[(system,self.planner_count[system])][DOMAINS] = domains
+            
+            
     def set_memory(self, memory: int):
         self.memory = memory
     

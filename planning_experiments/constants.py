@@ -50,6 +50,7 @@ VALIDATION = 'validation'
 SEARCH_ENGINE="search_engine"
 HEURISTIC="heuristic"
 PARAMS="parameters"
+PLANNER_ID = "planner_id"
 
 
 LOGO = """

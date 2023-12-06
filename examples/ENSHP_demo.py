@@ -24,10 +24,12 @@ def main():
     env = Environment (results_folder,name="ENSHP_TEST")
 
     planner = ENSHP_PlannerWrapper('my_ENSHP_planner',ENSHP_PATH,params)
+    planner1 = ENSHP_PlannerWrapper('my_ENSHP_planner',ENSHP_PATH,params)
     Depots_Numeric = Domain('Depots_Numeric',path.join(PDDL_PATH, 'Depots-Numeric'))
     fnCounters = Domain('fnCounters',path.join(PDDL_PATH,'fn-counters'))
 
     env.add_run(system=planner,  domains=[Depots_Numeric,fnCounters] )
+    env.add_run(system=planner1,  domains=[Depots_Numeric,fnCounters] )
     env.set_time(None)
     env.set_memory(None)
     executor = Executor(env,planner)
