@@ -14,7 +14,7 @@ def scripts_setup(script_folder):
     #######################################
     os.makedirs(script_folder)
 
-
+## guardare questo per verificare se c'è un file o no 
 def get_run_folder(results_folder: str, exp_id: str):
     create_folder(results_folder)
 

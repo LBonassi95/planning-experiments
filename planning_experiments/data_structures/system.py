@@ -4,22 +4,13 @@ from  planning_experiments.data_structures.parameters import Parameters
 class System:
     def __init__(self, name: str) -> None:
         self.name = name
-        self.planner_id = None
+        
 
     def get_cmd(self) -> List[str]:
         raise NotImplementedError
     
     def get_name(self) -> str:
         return self.name
-
-    def set_planner_id(self, planner_id: int) :
-        self.planner_id = planner_id 
-    
-    def get_identifier(self):
-       return self.name+"_"+str(self.planner_id)
-
-    def get_id(self):
-        return self.planner_id
 
     def get_path(self)-> str:
         raise NotImplementedError
@@ -35,6 +26,7 @@ class System:
     def __repr__(self) -> str:
         return self.get_name()
     
+    
     def get_dependencies(self) -> List[str]:
         raise NotImplementedError
 
@@ -45,6 +37,7 @@ class Planner(System):
         super().__init__(name)
         self.planner_path = planner_path
         self.params = params
+        self.install= "apptainer build"
 
     def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
         raise NotImplementedError
@@ -58,6 +51,28 @@ class Planner(System):
     def get_params(self) -> str:
        return self.params.get_parameters()
     
+class ApptainerPlanner(System):
+
+    def __init__(self, name: str, params:Parameters) -> None:
+        super().__init__(name)
+        self.params = params
+        self.install= "apptainer build"
+
+    def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
+        raise NotImplementedError
+    
+    def get_dependencies(self) -> List[str]:
+        return [self.get_path()]
+    
+    def get_params(self) -> str:
+       return self.params.get_parameters()
+    
+    def install_planner(self, planner_sif: str, planner_resource: str) :
+        raise 
+    
+    def install_cmd(self):
+        raise
+
 
 # FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
 class Compiler(Planner):

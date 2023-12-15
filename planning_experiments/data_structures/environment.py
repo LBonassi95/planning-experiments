@@ -40,13 +40,12 @@ class Environment:
     def add_run(self, system: System, domains: List[Domain]):
 
         if self.planner_count.get(system, None) is not None:
-            self.planner_count[system] += 1
-            system.set_planner_id(self.planner_count[system])
-            self.run_dictionary[(system,self.planner_count[system])] = { }
-            self.run_dictionary[(system,self.planner_count[system])][DOMAINS] = domains
+            #self.planner_count[system] += 1
+            #self.run_dictionary[(system,self.planner_count[system])] = { }
+            #self.run_dictionary[(system,self.planner_count[system])][DOMAINS] = domains
+            raise ValueError()
         else:
             self.planner_count[system] = 0
-            system.set_planner_id(self.planner_count[system])
             self.run_dictionary[(system,self.planner_count[system])] = { }
             self.run_dictionary[(system,self.planner_count[system])][DOMAINS] = domains
             

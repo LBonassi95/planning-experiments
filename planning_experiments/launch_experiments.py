@@ -75,9 +75,9 @@ class Executor:
 
         for planner,planner_id in self.environment.run_dictionary.keys():
             assert isinstance(planner, System)
-            blob[planner.get_identifier()] = {}
+            blob[planner.get_name()] = {}
             for domain in self.environment.run_dictionary[(planner,planner_id)][DOMAINS]:
-                blob[planner.get_identifier()][domain.name] = {}
+                blob[planner.get_name()][domain.name] = {}
                 self._create_script(planner, domain, exp_id, run_folder, script_list, blob, blob_path, test_run, script2blob)
         
         with open(blob_path, 'w') as f:
@@ -89,8 +89,8 @@ class Executor:
         return script_list, script2blob, blob_path
   
     def _create_script(self, planner: System, domain: Domain, exp_id: str, run_folder: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool, script2blob: dict):
-        planner_name = planner.get_identifier()
-        print(planner.get_identifier())
+        planner_name = planner.get_name()
+
         instances = domain.instances
         if test_run:
             instances = instances[:2]
