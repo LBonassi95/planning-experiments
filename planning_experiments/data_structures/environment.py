@@ -36,7 +36,8 @@ class Environment:
         self.priority = 500
         self.qsub = False
         self.parallel_processes = 8
-
+##impostare parallel process a 1
+##poi impostare a 3
     def add_run(self, system: System, domains: List[Domain]):
 
         if self.planner_count.get(system, None) is not None:
