@@ -10,7 +10,7 @@ class ApptainerManager:
      self.planner_name = planner_name
      self.planner_path = self.folder_path+""+self.planner_name
      self.recipe_name = recipe_name
-     self.recipe_path = os.path.abspath(recipe_name) 
+     self.recipe_path = self.is_file_in_project(recipe_name)
      self.planner_str = planner_name +" "+self.recipe_path
 # project_path sarà il percorso radice del progetto in cui sono contenuti tutti i file
 # folder_path sarà il percorso dove vengono salvati i planner apptainer
