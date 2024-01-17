@@ -10,8 +10,7 @@ class ApptainerManager:
      self.planner_name = planner_name
      self.planner_path = self.folder_path+""+self.planner_name
      self.recipe_name = recipe_name
-     self.recipe_path = os.path.abspath(recipe_name) 
-     self.planner_str = planner_name +" "+self.recipe_path
+     self.planner_str = planner_name +" "+self.recipe_name
 # project_path sarà il percorso radice del progetto in cui sono contenuti tutti i file
 # folder_path sarà il percorso dove vengono salvati i planner apptainer
 # planner_name sarà il nome del planner --> es: enhsp
@@ -56,7 +55,7 @@ class ApptainerManager:
     # folder_path è ad esempio /examples/apptainer_planner
     #  
     def apptainer_planner_install(self,folder_path :str, planner_sif_install_str: str):
-        command = f"sudo apptainer build --sandbox {folder_path}/{planner_sif_install_str}"
+        command = f"apptainer build --sandbox {folder_path}/{planner_sif_install_str} "
         print(command)
         try:
             subprocess.run(command, shell=True, check=True)
@@ -69,3 +68,9 @@ class ApptainerManager:
 # planner_path = "/Users/mattiatanchis/TESI/planning-experiments/apptainer_planner/enshp.sif"
 # floder_path = "/Users/mattiatanchis/TESI/planning-experiments/apptainer_planner"
 
+def main():
+    test = ApptainerManager("enhsp","Apptainer.enhsp")
+    test.apptainer_planner_manage();
+
+if __name__ == "__main__":
+    main()

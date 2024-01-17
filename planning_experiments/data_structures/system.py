@@ -53,10 +53,10 @@ class Planner(System):
     
 class ApptainerPlanner(System):
 
-    def __init__(self, name: str, params:Parameters) -> None:
+    def __init__(self, name: str, params:Parameters, apptainer_planner_name: str) -> None:
         super().__init__(name)
         self.params = params
-        self.install= "apptainer build"
+        self.apptainer_planner_name = apptainer_planner_name
 
     def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
         raise NotImplementedError
@@ -66,9 +66,6 @@ class ApptainerPlanner(System):
     
     def get_params(self) -> str:
        return self.params.get_parameters()
-    
-    def install_planner(self, planner_sif: str, planner_resource: str) :
-        raise 
     
     def install_cmd(self):
         raise

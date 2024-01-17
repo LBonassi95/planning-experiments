@@ -2,6 +2,7 @@ from typing import List, Tuple
 import os
 from planning_experiments.constants import *
 from planning_experiments.data_structures.system import System
+from planning_experiments.ApptainerManager import *
 from planning_experiments.data_structures.domain import Domain
 import pkg_resources
 
@@ -21,7 +22,7 @@ class Environment:
     SCRIPTS_FOLDER = 'scripts'
     RESULTS_FOLDER = 'results'
 
-    def __init__(self, experiments_folder: str, name: str) -> None:
+    def __init__(self, experiments_folder: str, name: str,planner_name: str, recipe_name: str) -> None:
         self.experiments_folder = experiments_folder
         self.run_dictionary = {}
         self.planner_count = {}
@@ -36,10 +37,13 @@ class Environment:
         self.priority = 500
         self.qsub = False
         self.parallel_processes = 8
+        self.recipe_name= recipe_name
+        self.planner_name = planner_name
+        self.manager_apptainer = ApptainerManager(self.planner_name,self.recipe_name)
 ##impostare parallel process a 1
 ##poi impostare a 3
     def add_run(self, system: System, domains: List[Domain]):
-
+        self.manager_apptainer.apptainer_planner_manage()
         if self.planner_count.get(system, None) is not None:
             #self.planner_count[system] += 1
             #self.run_dictionary[(system,self.planner_count[system])] = { }
