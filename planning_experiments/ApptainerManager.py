@@ -10,7 +10,7 @@ class ApptainerManager:
      self.planner_name = planner_name
      self.planner_path = self.folder_path+""+self.planner_name
      self.recipe_name = recipe_name
-     self.recipe_path = self.is_file_in_project(recipe_name)
+     self.recipe_path = self.is_file_in_project(self.project_path,recipe_name)
      self.planner_str = planner_name +" "+self.recipe_path
 # project_path sarà il percorso radice del progetto in cui sono contenuti tutti i file
 # folder_path sarà il percorso dove vengono salvati i planner apptainer
@@ -29,16 +29,22 @@ class ApptainerManager:
         if not path.isdir(folder_path):
             os.makedirs(folder_path)
 
-    def is_file_in_project(self, project_path: str, file_name: str):
+    def is_dir_in_project(self, project_path: str, file_name: str):
         for root, dirs, files in os.walk(project_path):
             if file_name in dirs:
+                return os.path.join(root,file_name)
+        return None
+    
+    def is_file_in_project(self, project_path: str, file_name: str):
+        for root, dirs, files in os.walk(project_path):
+            if file_name in files:
                 return os.path.join(root,file_name)
         return None
 
 
     def apptainer_planner_manage(self): 
         self.apptainer_folder_manage(self.folder_path) 
-        sandbox_path = self.is_file_in_project(self.project_path, self.planner_name)
+        sandbox_path = self.is_dir_in_project(self.project_path, self.planner_name)
         if sandbox_path is None:
             self.apptainer_planner_install(self.folder_path,self.planner_str)
         else: 
