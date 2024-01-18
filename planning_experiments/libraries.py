@@ -15,3 +15,5 @@ def install_library(library_name):
         except Exception as e:
             print(f"There is an error during the installation of {library_name} : {str(e)}")
 
+
+# tqdm, tabulate, pandas, click
