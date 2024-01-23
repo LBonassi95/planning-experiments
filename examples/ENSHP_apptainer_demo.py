@@ -7,7 +7,7 @@ import click
 from os import path
 import pkg_resources
 
-ENSHP_PATH = "/Users/mattiatanchis/ENHSP-Public" #path of ENSHP
+
 PDDL_PATH = pkg_resources.resource_filename(__name__,'pddl/')
 
 

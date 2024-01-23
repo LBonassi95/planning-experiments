@@ -17,7 +17,7 @@ class ApptainerManager:
 # planner_name sarà il nome del planner --> es: enhsp
 #
 #
-     
+     # da mettere in un altro script 
     def found_project_path(self):
         input_string = os.path.abspath("planning-experiments")
         last_dash_index = input_string.rfind("/")

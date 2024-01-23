@@ -78,5 +78,6 @@ class ApptainerManager:
 def main():
     test = ApptainerManager("enhsp","Apptainer.enhsp")
     test.apptainer_planner_manage()
+    /..../planning-experiments/planning-experiments
 if __name__ == "__main__":
     main()

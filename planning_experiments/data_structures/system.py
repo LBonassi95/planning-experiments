@@ -1,5 +1,6 @@
 from typing import List
 from  planning_experiments.data_structures.parameters import Parameters
+from  planning_experiments.utils import find_project_path
 
 class System:
     def __init__(self, name: str) -> None:
@@ -69,6 +70,9 @@ class ApptainerPlanner(System):
     
     def install_cmd(self):
         raise
+
+    def get_path(self) -> str:
+        return find_project_path()+"/apptainer_planner/"+self.apptainer_planner_name
 
 
 # FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
