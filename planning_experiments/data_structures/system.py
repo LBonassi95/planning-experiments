@@ -1,8 +1,15 @@
 from typing import List
 from  planning_experiments.data_structures.parameters import Parameters
-from  planning_experiments.utils import find_project_path
+import os
+
+def find_project_path():
+    input_string = os.path.abspath("planning-experiments")
+    last_dash_index = input_string.rfind("/")
+    result = input_string[:last_dash_index]
+    return result
 
 class System:
+
     def __init__(self, name: str) -> None:
         self.name = name
         

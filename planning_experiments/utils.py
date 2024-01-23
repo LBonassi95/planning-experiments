@@ -48,8 +48,4 @@ def delete_old_folder(folder: str):
     if path.isdir(folder):
         subprocess.run(RM_CMD.format(folder), shell=True)
 
-def find_project_path():
-    input_string = os.path.abspath("planning-experiments")
-    last_dash_index = input_string.rfind("/")
-    result = input_string[:last_dash_index]
-    return result
+
