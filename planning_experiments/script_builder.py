@@ -39,7 +39,7 @@ class ScriptBuilder:
         self.domain_name = domain_name
         self.instance_name = instance_name
         self.results = results
-        self.command= self.defineOS()
+        
 
     def get_script(self):
         self.outer_script.append(self.BASH)
@@ -85,7 +85,7 @@ class ScriptBuilder:
     def manage_dependencies(self):
         dependencies = set([dep for dep in self.system.get_dependencies()])
         for dep in dependencies:
-            self.outer_script.append(f'cp -r {path.abspath(dep)} {self.system_dst}')
+            self.outer_script.append(f'ln -s {path.abspath(dep)} {self.system_dst}') #cp -r 
     
     def manage_complex_cmd(self):
         if isinstance(self.system_exe, list):
@@ -96,12 +96,4 @@ class ScriptBuilder:
         else:
             return [self.system_exe]
     
-    def defineOS(self):
-        so = platform.system()
-        if so == "Darwin":
-            self.command = "phyton3"
-        else:
-            if so == "Windows":
-                self.command = "phyton"
-            else:
-                self.command == "phyton"
+    
