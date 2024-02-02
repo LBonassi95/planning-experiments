@@ -12,9 +12,7 @@ class ApptainerManager:
      self.recipe_name = recipe_name
      self.recipe_path = self.is_file_in_project(self.project_path,recipe_name)
      self.planner_str = planner_name +" "+self.recipe_path
-# project_path sarà il percorso radice del progetto in cui sono contenuti tutti i file
-# folder_path sarà il percorso dove vengono salvati i planner apptainer
-# planner_name sarà il nome del planner --> es: enhsp
+#
 #
 #
      # da mettere in un altro script 
@@ -41,7 +39,6 @@ class ApptainerManager:
                 return os.path.join(root,file_name)
         return None
 
-
     def apptainer_planner_manage(self): 
         self.apptainer_folder_manage(self.folder_path) 
         sandbox_path = self.is_dir_in_project(self.project_path, self.planner_name)
@@ -56,11 +53,6 @@ class ApptainerManager:
             except Exception as e:
                 print ("errore durante lo spostamento")
     # 
-    # planner_sif è ad esempio enshp.sif
-    # planner_sif_install_str è ad esempio enshp.sif docker:ecc
-    # planner_path è ad esempio /examples/apptainer_planner/enshp.sif
-    # folder_path è ad esempio /examples/apptainer_planner
-    #  
     def apptainer_planner_install(self,folder_path :str, planner_sif_install_str: str):
         command = f"sudo apptainer build --sandbox {folder_path}/{planner_sif_install_str}"
         print(command)

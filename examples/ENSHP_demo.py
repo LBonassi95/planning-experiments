@@ -11,7 +11,7 @@ ENSHP_PATH = "/Users/mattiatanchis/ENHSP-Public" #path of ENSHP
 PDDL_PATH = pkg_resources.resource_filename(__name__,'pddl/')
 
 
-class ENSHP_PlannerWrapper(ApptainerPlanner):
+class ENSHP_PlannerWrapper(Planner):
     def __init__(self, name: str, planner_path: str, params:ENSHP_Param) -> None:
         super().__init__(name, planner_path, params)
     def get_cmd(self, domain_path, instance_path, solution_path):
