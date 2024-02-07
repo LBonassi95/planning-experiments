@@ -1,15 +1,8 @@
-# Usa un'immagine di Ubuntu
 FROM ubuntu:latest
-
-# Aggiorna l'indice dei pacchetti e installa Python
-RUN apt-get update && apt-get install -y python3 && apt-get install tar
 
 COPY install-apptainer-ubuntu.sh .
 
-# Crea una directory nel container
 RUN mkdir /app
-
-COPY planning-experiments ./app
 
 RUN bash install-apptainer-ubuntu.sh 1.0.3 1.18.3 \
     && apt-get update \
@@ -28,12 +21,52 @@ RUN bash install-apptainer-ubuntu.sh 1.0.3 1.18.3 \
     build-essential \
     gcc-x86-64-linux-gnu \
     python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
+    && rm -rf /var/lib/apt/lists/*  
+    
 RUN pip3 install --upgrade pip
 RUN pip3 install setuptools
+RUN pip3 install tqdm \
+    click\
+    pandas\
+    tabulate
+#creazione utenti
+RUN apt-get update && apt-get install -y python3 && apt-get install tar 
+RUN apt-get update && \
+    apt-get install -y sudo
+
+# Crea un utente temporaneo e aggiungilo al gruppo sudo
+RUN useradd -m -G sudo myuser
+
+# Configura sudo per l'utente
+RUN echo 'myuser ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/myuser
+
+# Cambia l'utente predefinito a myuser
+USER myuser
+
+# Cambia il working directory
+WORKDIR /home/myuser
+
+USER root
+#set permessi
+RUN apt-get update && \
+    apt-get install -y sudo && \
+    rm -rf /var/lib/apt/lists/* && \
+    usermod -aG sudo myuser && \
+    echo 'myuser ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/myuser && \
+    usermod -u 1000 myuser && \
+    groupmod -g 1000 myuser
+
+# Cambia utente predefinito
+USER myuser
+
+RUN cd /home/myuser && \
+    git clone https://github.com/MattiaTanchis/planning-experiments.git && \
+    cd planning-experiments && \
+    pip3 install . && \ 
+    sudo chmod -R  734 ../planning-experiments
 
 CMD ["tail", "-f", "/dev/null"]
+
 
 
 
@@ -53,3 +86,7 @@ CMD ["tail", "-f", "/dev/null"]
 #   cd apptainer, successivamente è necessario eseguire questi comandi ./mconfig, cd $(/bin/pwd)/builddir, make, sudo make install
 # link installazione go : https://levelup.gitconnected.com/installing-go-on-ubuntu-b443a8f0eb55
 # link installazione apptainer: https://github.com/apptainer/apptainer/blob/main/INSTALL.md
+# 3) Avvio container
+#   è necessario lanciare il container docker con il comando "docker run --privileged nome container "
+#
+#
