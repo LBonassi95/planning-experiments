@@ -33,3 +33,5 @@ class ENSHP_Param(Parameters):
         return "search_engine: " + self.search_engine +", heuristics: " + self.heuristics + ", others: " + self.get_others()
         
     
+
+parmas = [('-h'), ('-g')]

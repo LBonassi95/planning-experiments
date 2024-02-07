@@ -16,7 +16,8 @@ class ENSHP_PlannerWrapper(ApptainerPlanner):
         super().__init__(name, params, apptainer_planner_name)
     def get_cmd(self, domain_path, instance_path, solution_path):
         return f'apptainer run {self.apptainer_planner_name}  -h {self.params.get_heuristics()} -s {self.params.get_search_engine()} -o {domain_path} -f {instance_path} -sp {solution_path}'
-   
+   # return f'apptainer run {self.apptainer_planner_name} domain.pddl p01.pddl sol get_parameters() 
+  # get parameters ritornerà una stringa che ha tipo "-h euristica" "-s search_engine exx"
 
 def main():
     results_folder = pkg_resources.resource_filename(__name__, 'Apptainer_ENHSP_TEST_RESULT')
