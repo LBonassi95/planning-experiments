@@ -16,6 +16,8 @@ class ENSHP_Param(Parameters):
         self.search_engine = search_engine
         self.heuristics = heuristics
         self.other_parameters = other_parameters
+        self.parmas = {'-h': self.heuristics, '-s': self.search_engine}#[('-h'), ('-g')]
+
     def get_heuristics(self) -> str :
         return self.heuristics    
     
@@ -34,4 +36,3 @@ class ENSHP_Param(Parameters):
         
     
 
-parmas = [('-h'), ('-g')]
