@@ -38,8 +38,8 @@ class ENSHP_Param(Parameters):
         return "search_engine: " + self.search_engine +", heuristics: " + self.heuristics + ", others: " + self.get_others()
 
     def get_parameters_cmd(self) -> str:
-     items_as_strings = [f"{key}: {value}" for key, value in self.params.items()]
-     return ''.join(items_as_strings)
+     items_as_strings = [f"{key} {value}" for key, value in self.params.items()]
+     return ' '.join(items_as_strings)
     
     
 
