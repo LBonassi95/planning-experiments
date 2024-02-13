@@ -8,6 +8,9 @@ class Parameters:
     
     def __eq__(self) -> bool:
         raise NotImplementedError
+    
+    def get_parameters_cmd(self) -> str:
+        raise NotImplementedError
 
 
 class ENSHP_Param(Parameters):
@@ -16,7 +19,7 @@ class ENSHP_Param(Parameters):
         self.search_engine = search_engine
         self.heuristics = heuristics
         self.other_parameters = other_parameters
-        self.parmas = {'-h': self.heuristics, '-s': self.search_engine}#[('-h'), ('-g')]
+        self.params = {'-h': self.heuristics, '-s': self.search_engine}#[('-h'), ('-g')]
 
     def get_heuristics(self) -> str :
         return self.heuristics    
@@ -33,6 +36,13 @@ class ENSHP_Param(Parameters):
 
     def get_parameters(self) -> str:
         return "search_engine: " + self.search_engine +", heuristics: " + self.heuristics + ", others: " + self.get_others()
+
+    def get_parameters_cmd(self) -> str:
+     items_as_strings = [f"{key}: {value}" for key, value in self.params.items()]
+     return ''.join(items_as_strings)
+    
+    
+
         
     
 
