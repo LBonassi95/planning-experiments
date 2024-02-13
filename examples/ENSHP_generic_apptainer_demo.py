@@ -15,7 +15,7 @@ class ENSHP_PlannerWrapper(ApptainerPlanner):
     def __init__(self, name: str, params:ENSHP_Param, apptainer_planner_name: str) -> None:
         super().__init__(name, params, apptainer_planner_name)
     def get_cmd(self, domain_path, instance_path, solution_path):
-        return f'apptainer run {self.apptainer_planner_name}  {domain_path} {instance_path} {solution_path} {self.get_parameters_cmd()}'
+        return f'apptainer run {self.apptainer_planner_name}  {domain_path} {instance_path} {solution_path} {self.params.get_parameters_cmd()}'
    # return f'apptainer run {self.apptainer_planner_name} domain.pddl p01.pddl sol get_parameters() 
   # get parameters ritornerà una stringa che ha tipo "-h euristica" "-s search_engine exx"
 
