@@ -21,7 +21,7 @@ class ENSHP_PlannerWrapper(ApptainerPlanner):
 
 def main():
     results_folder = pkg_resources.resource_filename(__name__, 'Apptainer_ENHSP_TEST_RESULT')
-    params = ENSHP_Param('gbfs','hadd','None')
+    params = ENSHP_Param('gbfs','hadd',None)
     env = Environment (results_folder,name="ENHSP_TEST",planner_name='enhsp',recipe_name='Apptainer.enhsp_generic')
 
     planner = ENSHP_PlannerWrapper('my_ENSHP_planner',params,apptainer_planner_name='enhsp')
