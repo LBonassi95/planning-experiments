@@ -90,5 +90,5 @@ CMD ["tail", "-f", "/dev/null"]
 # link installazione apptainer: https://github.com/apptainer/apptainer/blob/main/INSTALL.md
 # 3) Avvio container
 #   è necessario lanciare il container docker con il comando "docker run --privileged nome container "
-#
+#cio
 #
