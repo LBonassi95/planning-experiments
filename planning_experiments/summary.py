@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 import re
-from planning_experiments.constants import STDE, NUM_SOLUTIONS, SOLUTIONS
+from planning_experiments.constants import STDE, NUM_SOLUTIONS, SOLUTIONS,SEARCH_ENGINE,HEURISTIC,PARAMS
 
 SYS = 'planner'
 DOM = 'domain'
@@ -12,6 +12,7 @@ CT = 'comptime'
 SOL = 'solved'
 PL = 'quality'
 NA = 'n/a'
+P="parameters"
 
 
 def extract_float(text: str, regex: str):
@@ -32,9 +33,12 @@ def create_summary(blob_path, output_path):
         for domain in blob[planner].keys():
             for instance in blob[planner][domain].keys():
                 record = {SYS: planner, DOM: domain, PROB: instance}
+                record[P] =blob[planner][domain][instance][PARAMS]
                 record[RT] = extract_float(blob[planner][domain][instance][STDE], r'Total Runtime: (.*)\n')
                 record[SOL] = False
                 record[PL] = NA
+                
+                
 
                 if blob[planner][domain][instance][NUM_SOLUTIONS] > 0:
                     record[SOL] = True

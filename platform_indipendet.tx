@@ -1,0 +1,12 @@
+Per rendere il tool platform indipendent una soluzione è usare il modulo platform che permette di individuare quale SO si usa
+
+ES:
+    import platform
+    so = platform.system()
+
+    if so == "Darwin" ##MacOS
+        command = "phyton3"
+    elseif so == "Windows"
+        command = "phyton"
+    elseif so == "Linux"
+        command == "phyton"

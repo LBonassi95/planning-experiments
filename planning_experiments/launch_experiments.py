@@ -27,13 +27,14 @@ def run_script(script_info: Tuple[str, str]):
 
 class Executor:
 
-    def __init__(self, environment: Environment, short_name: str = '') -> None:
+    def __init__(self, environment: Environment, planner: Planner,short_name: str = '') -> None:
         self.environment = environment
         self.short_name = short_name
         self.script_folder = None
         self.results_folder = None
         self.systems_tmp_folder = None
         self.log_folder = None
+        self.planner=planner
     
     def show_info(self, run_folder: str):
         data = self.environment.get_info()
@@ -64,7 +65,7 @@ class Executor:
         self.systems_tmp_folder = path.join(self.environment.experiments_folder, PLANNER_COPIES_FOLDER)
         self.log_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
     
-    def create_scripts(self, exp_id: str, run_folder: str,test_run: bool):
+    def create_scripts(self, exp_id: str, run_folder: str, test_run: bool):
         script_list = []
         scripts_setup(self.script_folder)
         
@@ -72,13 +73,13 @@ class Executor:
         blob_path = path.join(run_folder, 'blob.json')
         script2blob = {}
 
-        for planner in self.environment.run_dictionary.keys():
+        for planner,planner_id in self.environment.run_dictionary.keys():
             assert isinstance(planner, System)
             blob[planner.get_name()] = {}
-            for domain in self.environment.run_dictionary[planner][DOMAINS]:
+            for domain in self.environment.run_dictionary[(planner,planner_id)][DOMAINS]:
                 blob[planner.get_name()][domain.name] = {}
                 self._create_script(planner, domain, exp_id, run_folder, script_list, blob, blob_path, test_run, script2blob)
-
+        
         with open(blob_path, 'w') as f:
             json.dump(blob, f, indent=4)
         
@@ -89,7 +90,7 @@ class Executor:
   
     def _create_script(self, planner: System, domain: Domain, exp_id: str, run_folder: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool, script2blob: dict):
         planner_name = planner.get_name()
-        
+
         instances = domain.instances
         if test_run:
             instances = instances[:2]
@@ -121,6 +122,7 @@ class Executor:
             blob[planner_name][domain.name][instance_name][STDE] = stde
             blob[planner_name][domain.name][instance_name][STDO] = stdo
             blob[planner_name][domain.name][instance_name][PLANNER_EXE] = planner_exe
+            blob[planner_name][domain.name][instance_name][PARAMS]=self.planner.get_params()
             ###################################
             
             copy_planner_dst, planner_source = manage_planner_copy(

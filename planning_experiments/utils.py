@@ -14,7 +14,7 @@ def scripts_setup(script_folder):
     #######################################
     os.makedirs(script_folder)
 
-
+## guardare questo per verificare se c'è un file o no 
 def get_run_folder(results_folder: str, exp_id: str):
     create_folder(results_folder)
 
@@ -47,3 +47,5 @@ def write_script(shell_script, script_name, script_dst):
 def delete_old_folder(folder: str):
     if path.isdir(folder):
         subprocess.run(RM_CMD.format(folder), shell=True)
+
+

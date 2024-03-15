@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: ubuntu:latest
+Stage: build
+
+
+%post
+    apt-get update
+    apt-get -y install --no-install-recommends git ca-certificates openjdk-17-jdk
+    cd ../
+    mkdir planner
+    cd planner
+    git clone https://gitlab.com/enricos83/ENHSP-Public/ -b enhsp-20
+    cd ENHSP-Public/
+    ./compile
+    mv enhsp-dist/ ../
+    cd ../
+    rm -rf ENHSP-Public/
+
+
+%runscript
+    java -jar /planner/enhsp-dist/enhsp.jar "$@" 

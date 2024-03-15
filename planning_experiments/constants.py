@@ -6,7 +6,7 @@ PPN = "PPN"
 NO_VALIDATION_PERFORMED = 'N/A'
 
 PDDL_EXTENSION = ".pddl"
-DOMAIN_STR_CONST = "domain"
+DOMAIN_STR_CONST = "domain"  ##da dove prende il nome domain.pddl
 
 # Errors #####
 DOMAIN_INSTANCES_ERROR = "ERROR! domain files and problem files don't match in number"
@@ -47,6 +47,10 @@ STDO = 'stdo'
 VAL_DOMAIN_PATH = 'val_domain_path'
 VAL_INSTANCE_PATH = 'val_instance_path'
 VALIDATION = 'validation'
+SEARCH_ENGINE="search_engine"
+HEURISTIC="heuristic"
+PARAMS="parameters"
+PLANNER_ID = "planner_id"
 
 
 LOGO = """

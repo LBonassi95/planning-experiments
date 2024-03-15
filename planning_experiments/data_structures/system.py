@@ -1,15 +1,25 @@
 from typing import List
+from  planning_experiments.data_structures.parameters import Parameters
+import os
+
+def find_project_path():
+    input_string = os.path.abspath("planning-experiments")
+    last_dash_index = input_string.rfind("/")
+    result = input_string[:last_dash_index]
+    return result
 
 class System:
+
     def __init__(self, name: str) -> None:
         self.name = name
+        
 
     def get_cmd(self) -> List[str]:
         raise NotImplementedError
     
     def get_name(self) -> str:
         return self.name
-    
+
     def get_path(self)-> str:
         raise NotImplementedError
 
@@ -24,14 +34,18 @@ class System:
     def __repr__(self) -> str:
         return self.get_name()
     
+    
     def get_dependencies(self) -> List[str]:
         raise NotImplementedError
 
+
 class Planner(System):
 
-    def __init__(self, name: str, planner_path: str) -> None:
+    def __init__(self, name: str, planner_path: str, params:Parameters) -> None:
         super().__init__(name)
         self.planner_path = planner_path
+        self.params = params
+        self.install= "apptainer build"
 
     def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
         raise NotImplementedError
@@ -41,6 +55,32 @@ class Planner(System):
     
     def get_dependencies(self) -> List[str]:
         return [self.get_path()]
+    
+    def get_params(self) -> str:
+       return self.params.get_parameters()
+    
+class ApptainerPlanner(System):
+
+    def __init__(self, name: str, params:Parameters, apptainer_planner_name: str) -> None:
+        super().__init__(name)
+        self.params = params
+        self.apptainer_planner_name = apptainer_planner_name
+
+    def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
+        raise NotImplementedError
+    
+    def get_dependencies(self) -> List[str]:
+        return [self.get_path()]
+    
+    def get_params(self) -> str:
+       return self.params.get_parameters()
+    
+    def install_cmd(self):
+        raise
+
+    def get_path(self) -> str:
+        return find_project_path()+"/apptainer_planner/"+self.apptainer_planner_name
+
 
 # FOR NOW, A COMPILER CAN BE CHAINED ONLY WITH A PLANNER (NOT ANOTHER COMPLIER!)
 class Compiler(Planner):
@@ -65,3 +105,4 @@ class Compiler(Planner):
         
     def make_shell_chain(self) -> str:
         raise NotImplementedError
+    

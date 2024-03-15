@@ -7,7 +7,7 @@ def _is_domain(file: str):
 def _is_instance(file: str):
     return PDDL_EXTENSION in file and DOMAIN_STR_CONST not in file
 
-class InstancesCollector:
+class InstancesCollector: ##da dove prende il nome domain.pddl
     def __init__(self, is_domain=_is_domain, is_instance=_is_instance) -> None:
         self.is_domain = is_domain
         self.is_instance = is_instance
