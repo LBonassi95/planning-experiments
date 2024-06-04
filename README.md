@@ -14,3 +14,5 @@ pip install .
 ## Usage
 
 Have a look at the `examples/` folder!
+
+The library assumes that "python" is the alias you use to execute python scripts
