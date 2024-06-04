@@ -1,8 +1,5 @@
-from distutils.command.config import config
-import planning_experiments
 from planning_experiments.data_structures import *
 from planning_experiments.launch_experiments import Executor
-import click
 from os import path
 import pkg_resources
 
@@ -32,7 +29,7 @@ def main():
     rovers = Domain('rovers', path.join(PDDL_PATH, 'rovers'))
 
     env.add_run(system=my_planner, domains=[blocksworld, rovers])
-    env.set_time(None)
+    env.set_time(10)
     executor = Executor(env)
     executor.run_experiments()
 

@@ -5,7 +5,7 @@ import random
 import datetime
 from planning_experiments.constants import *
 from planning_experiments.data_structures.environment import Domain, Environment, System
-from planning_experiments.script_builder import ScriptBuilder
+from planning_experiments.script_builder_python import ScriptBuilder
 from planning_experiments.utils import *
 from typing import List
 import json
@@ -21,7 +21,7 @@ def run_script(script_info: Tuple[str, str]):
     script_name = script_info[0]
     script = script_info[1]
     subprocess.run(f'chmod +x {script}', shell=True)
-    subprocess.run({script}, shell=True)
+    subprocess.run(f'python {script}', shell=True)
     return script_name
 
 
@@ -105,7 +105,7 @@ class Executor:
             create_folder(solution_folder)
 
             solution_name = f'{domain.name}_{instance_name}.sol'
-            script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}.sh'
+            script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}.py'
             path2domain = path.join(domain.path, pddl_domain)
             path2instance = path.join(domain.path, pddl_instance)
             path2solution = path.join(solution_folder, solution_name)
