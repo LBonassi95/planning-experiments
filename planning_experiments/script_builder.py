@@ -42,7 +42,7 @@ class ScriptBuilder:
     def get_script(self):
 
         self.outer_script = [
-            '#!/usr/bin/env python\n',
+            '#!/usr/bin/env python3\n',
             f'import os',
             f'import shutil',
             f'from planning_experiments.utils import limited_time_execution\n',
@@ -85,13 +85,13 @@ class ScriptBuilder:
         self.outer_script.append(exec_cmd)
        
         ## INNER SCRIPT ##
-        self.inner_script.append(f'#!/usr/bin/env python\n')
+        self.inner_script.append(f'#!/usr/bin/env python3\n')
         self.inner_script.append(f'import os')
 
         if self.memory != 'None':
             self.inner_script.append(f'os.system("ulimit -Sv {self.memory}")')
 
-        exe_list = self.manage_complex_cmd()
+        exe_list = self.manage_complex_cmd(timeout=self.time)
         self.inner_script += exe_list
 
         
@@ -109,11 +109,11 @@ class ScriptBuilder:
     def set_memory(self, memory: int):
         self.memory = memory
     
-    def manage_complex_cmd(self):
+    def manage_complex_cmd(self, timeout = 5):
         if isinstance(self.system_exe, list):
             cmd_chain = []
             for cmd in self.system_exe:
-                cmd_chain.append(f'os.system("{cmd}")')
+                cmd_chain.append(f'os.system("timeout {timeout} {cmd}")')
             return cmd_chain
         else:
-            return [f'os.system("{self.system_exe}")']
+            return [f'os.system("timeout {timeout} {self.system_exe}")']
