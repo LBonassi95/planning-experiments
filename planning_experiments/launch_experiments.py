@@ -38,8 +38,13 @@ class Executor:
         data.append(['Results folder:', run_folder])
         print(LOGO)
         print(tabulate(data, headers=["Infos", ""], tablefmt="fancy_grid"))
+
+    def check_nruns(self):
+        if self.environment.get_nruns() == 0:
+            raise Exception('No pddl instance provided')
     
     def run_experiments(self, test_run: bool = False):
+        self.check_nruns()
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
         self.define_paths(exp_id)
 

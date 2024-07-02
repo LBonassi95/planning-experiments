@@ -43,6 +43,14 @@ class Environment:
         else:
             self.run_dictionary[system] = {}
             self.run_dictionary[system][DOMAINS] = domains
+
+    def get_nruns(self):
+        nruns = 0
+        for system in self.run_dictionary:
+            for domain in self.run_dictionary[system][DOMAINS]:
+                assert isinstance(domain, Domain)
+                nruns += len(domain.instances)
+        return nruns
     
     def set_memory(self, memory: int):
         self.memory = memory
