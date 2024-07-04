@@ -32,7 +32,7 @@ def create_summary(blob_path, output_path):
         for domain in blob[planner].keys():
             for instance in blob[planner][domain].keys():
                 record = {SYS: planner, DOM: domain, PROB: instance}
-                record[RT] = extract_float(blob[planner][domain][instance][STDE], r'Total Runtime: (.*)\n')
+                record[RT] = extract_float(blob[planner][domain][instance][STDE], r'real (.*)\n')
                 record[SOL] = False
                 record[PL] = NA
 

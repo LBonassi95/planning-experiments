@@ -1,6 +1,7 @@
 from os import path
 from planning_experiments.data_structures.environment import Environment, System
 import pkg_resources
+import json
 
 class ScriptBuilder:
 
@@ -42,15 +43,15 @@ class ScriptBuilder:
     def get_script(self):
 
         self.outer_script = [
-            '#!/usr/bin/env python\n',
+            '#!/usr/bin/env python3\n',
             f'import os',
             f'import shutil',
-            f'from planning_experiments.utils import limited_time_execution\n',
+            #f'from planning_experiments.utils import limited_time_execution\n',
             f'working_dir = "{self.system_dst}"\n',
             f'stde = "{self.stde}"',
             f'stdo = "{self.stdo}"',
             f'time_limit = {self.time}\n',
-            f'exec = "{path.join(self.script_folder, self.script_name)} 2>> " + stde + " 1>> " + stdo\n',
+            f'exec_str = "{path.join(self.script_folder, self.script_name)} 2>> " + stde + " 1>> " + stdo\n',
         ]
 
 
@@ -80,12 +81,13 @@ class ScriptBuilder:
         exec_cmd = f'os.system(exec)'
 
         if self.time != "None":
-            exec_cmd = f'limited_time_execution(os.system, stde, args=[exec], timeout=time_limit)'
+            exec_cmd = f'os.system("time -p timeout --signal=HUP {self.time} " + exec_str)'
+            # exec_cmd = f'limited_time_execution(os.system, stde, args=[exec], timeout=time_limit)'
 
         self.outer_script.append(exec_cmd)
        
         ## INNER SCRIPT ##
-        self.inner_script.append(f'#!/usr/bin/env python\n')
+        self.inner_script.append(f'#!/usr/bin/env python3\n')
         self.inner_script.append(f'import os')
 
         if self.memory != 'None':
@@ -113,7 +115,7 @@ class ScriptBuilder:
         if isinstance(self.system_exe, list):
             cmd_chain = []
             for cmd in self.system_exe:
-                cmd_chain.append(f'os.system("{cmd}")')
+                cmd_chain.append(f'os.system({json.dumps(cmd)})')
             return cmd_chain
         else:
-            return [f'os.system("{self.system_exe}")']
+            return [f'os.system({json.dumps(self.system_exe)})']
