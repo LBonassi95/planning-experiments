@@ -108,7 +108,7 @@ class Executor:
             create_folder(solution_folder)
 
             solution_name = f'{domain.name}_{instance_name}.sol'
-            script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}.py'
+            script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}'
             path2domain = path.join(domain.path, pddl_domain)
             path2instance = path.join(domain.path, pddl_instance)
             path2solution = path.join(solution_folder, solution_name)
@@ -145,10 +145,10 @@ class Executor:
                                     script_folder=self.script_folder)
             
             inner_script, outer_script = builder.get_script()
-            write_script(inner_script, script_name, self.script_folder)
-            write_script(outer_script, f'run_{script_name}', self.script_folder)
-            script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, f'run_{script_name}')))
-            script2blob[script_name.replace('.sh', '')] = (planner_name, domain.name, instance_name)
+            write_script(inner_script, f"{script_name}.sh", self.script_folder)
+            write_script(outer_script, f'run_{script_name}.py', self.script_folder)
+            script_list.append((script_name, path.join(self.script_folder, f'run_{script_name}.py')))
+            script2blob[script_name] = (planner_name, domain.name, instance_name)
 
 
     

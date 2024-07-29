@@ -51,7 +51,7 @@ class ScriptBuilder:
             f'stde = "{self.stde}"',
             f'stdo = "{self.stdo}"',
             f'time_limit = {self.time}\n',
-            f'exec_str = "{path.join(self.script_folder, self.script_name)} 2>> " + stde + " 1>> " + stdo\n',
+            f'exec_str = "{path.join(self.script_folder, f"{self.script_name}.sh")} 2>> " + stde + " 1>> " + stdo\n',
         ]
 
 
@@ -87,11 +87,15 @@ class ScriptBuilder:
         self.outer_script.append(exec_cmd)
        
         ## INNER SCRIPT ##
-        self.inner_script.append(f'#!/usr/bin/env python3\n')
-        self.inner_script.append(f'import os')
+        # self.inner_script.append(f'#!/usr/bin/env python3\n')
+        # self.inner_script.append(f'import os')
 
+        # if self.memory != 'None':
+        #     self.inner_script.append(f'os.system("ulimit -Sv {self.memory}")')
+
+        self.inner_script.append('#!/bin/bash')
         if self.memory != 'None':
-            self.inner_script.append(f'os.system("ulimit -Sv {self.memory}")')
+            self.inner_script.append(f'ulimit -Sv {self.memory}')
 
         exe_list = self.manage_complex_cmd()
         self.inner_script += exe_list
@@ -115,7 +119,8 @@ class ScriptBuilder:
         if isinstance(self.system_exe, list):
             cmd_chain = []
             for cmd in self.system_exe:
-                cmd_chain.append(f'os.system({json.dumps(cmd)})')
+                #cmd_chain.append(f'os.system({json.dumps(cmd)})')
+                cmd_chain.append(cmd)
             return cmd_chain
         else:
-            return [f'os.system({json.dumps(self.system_exe)})']
+            return [self.system_exe]
