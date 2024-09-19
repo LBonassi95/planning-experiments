@@ -10,6 +10,7 @@ class RuntimeComparisonPlot:
         show_axis_labels: bool = True,
         timeout: int = 1800, 
         fontsize: int = 12, 
+        hide_legend: bool = False,
         plot_kwargs: dict = {}, 
         legend_kwargs: dict = {}, 
         markers_styles: dict = {}, 
@@ -27,6 +28,7 @@ class RuntimeComparisonPlot:
         self.markers_colors = markers_colors
         self.domain_legend = domain_legend
         self.system_legend = system_legend
+        self.hide_legend = hide_legend
 
         self._color_index = 0
 
@@ -57,6 +59,8 @@ class RuntimeComparisonPlot:
         plt.xscale("log")
         x = np.geomspace(1e0, self.timeout, num=100)
         points_above = 0
+        points_below = 0
+        points_on = 0
         merged_df, rt_label_1, rt_label_2 = self._extract_systems_dataframes(
             df, system1, system2
         )
@@ -73,8 +77,12 @@ class RuntimeComparisonPlot:
                         **self.plot_kwargs)
             self._color_index += 1 # For default colors
             points_above += len([k for k in np.subtract(rt_2, rt_1) if k > 0])
+            points_below += len([k for k in np.subtract(rt_2, rt_1) if k < 0])
+            points_on += len([k for k in np.subtract(rt_2, rt_1) if k == 0])
 
         print(f"Points above the line: {points_above}")
+        print(f"Points below the line: {points_below}")
+        print(f"Points on the line: {points_on}")
         plt.plot(x, x, "k--", label="_nolegend_")
         self._show_plot(ax, legend, system1, system2, output_path)
 
@@ -91,7 +99,8 @@ class RuntimeComparisonPlot:
             ax.set_ylabel(f"{get_legend_entry(self.system_legend, system2)} runtime", fontsize=self.fontsize)
         plt.xticks(fontsize=self.fontsize)
         plt.yticks(fontsize=self.fontsize)
-        ax.legend(legend, **self.legend_kwargs)
+        if not self.hide_legend:
+            ax.legend(legend, **self.legend_kwargs)
         plt.grid()
         plt.show() if output_path is None else plt.savefig(
             output_path, bbox_inches='tight'

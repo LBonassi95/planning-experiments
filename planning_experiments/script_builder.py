@@ -1,7 +1,6 @@
 from os import path
 from planning_experiments.data_structures.environment import Environment, System
-import pkg_resources
-import json
+from planning_experiments.constants import *
 
 class ScriptBuilder:
 
@@ -12,14 +11,13 @@ class ScriptBuilder:
                        system: System,
                        domain_name: str,
                        instance_name: str,
-                       results: str,
+                       blob_path: str,
                        system_dst: str,
                        time: int,
                        system_exe: str,
                        stdo: str,
                        stde: str,
                        script_name: str,
-                       info_dict_path: str,
                        script_folder: str,
                        memory: int = None) -> None:
         
@@ -35,23 +33,26 @@ class ScriptBuilder:
         self.stde = stde
         self.script_name = script_name
         self.script_folder = script_folder
-        self.info_dict_path = info_dict_path
         self.domain_name = domain_name
         self.instance_name = instance_name
-        self.results = results
+        self.blob_path = blob_path
 
     def get_script(self):
 
         self.outer_script = [
             '#!/usr/bin/env python3\n',
             f'import os',
-            f'import shutil',
-            #f'from planning_experiments.utils import limited_time_execution\n',
+            f'import shutil\n',
+            # f'{SAVE_RESULTS_SCRIPT}',
+            # f'blob_path = "{self.blob_path}"\n'
+            # f'planner = "{self.system}"\n'
+            # f'domain = "{self.domain_name}"\n'
+            # f'instance = "{self.instance_name}"\n'
             f'working_dir = "{self.system_dst}"\n',
-            f'stde = "{self.stde}"',
-            f'stdo = "{self.stdo}"',
+            f'stde_path = "{self.stde}"',
+            f'stdo_path = "{self.stdo}"',
             f'time_limit = {self.time}\n',
-            f'exec_str = "{path.join(self.script_folder, f"{self.script_name}.sh")} 2>> " + stde + " 1>> " + stdo\n',
+            f'exec_str = "{path.join(self.script_folder, f"{self.script_name}.sh")} 2>> " + stde_path + " 1>> " + stdo_path\n',
         ]
 
 
@@ -64,8 +65,8 @@ class ScriptBuilder:
 
         self.outer_script += [
             '\n'
-            f'open(stdo, "w")',
-            f'open(stde, "w")',
+            f'open(stdo_path, "w")',
+            f'open(stde_path, "w")',
             f'os.makedirs(working_dir)',
             f'os.chdir(working_dir)\n\n'
             f'################## COPY ALL SRC TO DST ##################'
@@ -102,6 +103,8 @@ class ScriptBuilder:
 
         
         #################
+        # self.outer_script.append(f'save_results(blob_path, planner, domain, instance)')
+
         if self.enviorment.delete_systems:
             self.outer_script.append(f'shutil.rmtree("{self.system_dst}")')
         

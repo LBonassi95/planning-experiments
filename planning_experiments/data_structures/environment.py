@@ -5,9 +5,6 @@ from planning_experiments.data_structures.system import System
 from planning_experiments.data_structures.domain import Domain
 import pkg_resources
 
-DEFAULT_MEM = 8000000
-DEFAULT_TIME = 1800
-
 ERROR_SYSTEM_ALREADY_ADDED = '''
 System "{system}" was already added to the environment.
 If you want to run "{system}" multiple times, 
@@ -36,13 +33,13 @@ class Environment:
         self.qsub = False
         self.parallel_processes = 8
 
-    def add_run(self, system: System, domains: List[Domain]):
+    def add_run(self, system: System, domains: List[Domain], batch_id: str = DEFAULT_BATCH):
 
         if self.run_dictionary.get(system, None) is not None:
             raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system=system))
         else:
-            self.run_dictionary[system] = {}
-            self.run_dictionary[system][DOMAINS] = domains
+            self.run_dictionary[system] = {DOMAINS: domains, BATCH: batch_id}
+    
 
     def get_nruns(self):
         nruns = 0

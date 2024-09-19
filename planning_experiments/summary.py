@@ -36,7 +36,11 @@ def create_summary(blob_path, output_path):
                 record[SOL] = False
                 record[PL] = NA
 
-                if blob[planner][domain][instance][NUM_SOLUTIONS] > 0:
+                if blob[planner][domain][instance].get(NUM_SOLUTIONS) is None:
+                    print(f"Error while creating the summary for {planner} {domain} {instance}. Skipping")
+                    record[SOL] = "N/A"
+
+                elif blob[planner][domain][instance][NUM_SOLUTIONS] > 0:
                     record[SOL] = True
                     assert len(blob[planner][domain][instance][SOLUTIONS]) == 1
                 records.append(record)
