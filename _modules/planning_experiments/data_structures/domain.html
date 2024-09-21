@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>planning_experiments.data_structures.domain &#8212; planning-experiments 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for planning_experiments.data_structures.domain</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">planning_experiments.constants</span> <span class="kn">import</span> <span class="n">PDDL_EXTENSION</span><span class="p">,</span> <span class="n">DOMAIN_STR_CONST</span><span class="p">,</span> <span class="n">DOMAIN_INSTANCES_ERROR</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="k">def</span> <span class="nf">_is_domain</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines if a given file is a domain file based on its extension and content.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file (str): The file name to check.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the file is a domain, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PDDL_EXTENSION</span> <span class="ow">in</span> <span class="n">file</span> <span class="ow">and</span> <span class="n">DOMAIN_STR_CONST</span> <span class="ow">in</span> <span class="n">file</span>
+
+<span class="k">def</span> <span class="nf">_is_instance</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines if a given file is an instance file based on its extension and content.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file (str): The file name to check.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the file is an instance, False if it&#39;s a domain.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PDDL_EXTENSION</span> <span class="ow">in</span> <span class="n">file</span> <span class="ow">and</span> <span class="n">DOMAIN_STR_CONST</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file</span>
+
+<div class="viewcode-block" id="InstancesCollector">
+<a class="viewcode-back" href="../../../planning_experiments.data_structures.html#planning_experiments.data_structures.domain.InstancesCollector">[docs]</a>
+<span class="k">class</span> <span class="nc">InstancesCollector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class used to collect PDDL domain and instance files.</span>
+
+<span class="sd">    This class separates domain files from instance files in a given directory and</span>
+<span class="sd">    pairs them according to specific rules.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    is_domain : function</span>
+<span class="sd">        A function to determine if a file is a domain file.</span>
+<span class="sd">    is_instance : function</span>
+<span class="sd">        A function to determine if a file is an instance file.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    collect_instances(instances_path: str) -&gt; list</span>
+<span class="sd">        Collects and pairs domain and instance files from the specified directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_domain</span><span class="o">=</span><span class="n">_is_domain</span><span class="p">,</span> <span class="n">is_instance</span><span class="o">=</span><span class="n">_is_instance</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs the necessary attributes for the InstancesCollector object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            is_domain (function, optional): A function to identify domain files. Defaults to _is_domain.</span>
+<span class="sd">            is_instance (function, optional): A function to identify instance files. Defaults to _is_instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_domain</span> <span class="o">=</span> <span class="n">is_domain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_instance</span> <span class="o">=</span> <span class="n">is_instance</span>
+
+<div class="viewcode-block" id="InstancesCollector.collect_instances">
+<a class="viewcode-back" href="../../../planning_experiments.data_structures.html#planning_experiments.data_structures.domain.InstancesCollector.collect_instances">[docs]</a>
+    <span class="k">def</span> <span class="nf">collect_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instances_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collects and pairs PDDL domain and instance files from the given path.</span>
+
+<span class="sd">        The function scans the specified directory for domain and instance files,</span>
+<span class="sd">        pairs them according to predefined rules, and returns a list of tuples</span>
+<span class="sd">        containing domain-instance pairs. It raises an exception if the number of </span>
+<span class="sd">        domains and instances is not consistent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instances_path (str): The path to the directory containing PDDL files.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of tuples where each tuple contains a domain and an instance file.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: If the number of domains is not exactly 1 or does not match the</span>
+<span class="sd">                number of instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pddl_domains</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pddl_instances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">instances_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_domain</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+                <span class="n">pddl_domains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_instance</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+                <span class="n">pddl_instances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pddl_domains</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">pddl_domains</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pddl_instances</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">DOMAIN_INSTANCES_ERROR</span><span class="p">)</span>
+        <span class="n">pddl_instances</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="n">pddl_domains</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pddl_instances</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pddl_domains</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pddl_domains</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pddl_instances</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pddl_domains</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pddl_instances</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">pairs</span></div>
+</div>
+
+
+<div class="viewcode-block" id="Domain">
+<a class="viewcode-back" href="../../../planning_experiments.data_structures.html#planning_experiments.data_structures.domain.Domain">[docs]</a>
+<span class="k">class</span> <span class="nc">Domain</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class used to represent a planning domain and its associated instances.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the domain.</span>
+<span class="sd">    path : str</span>
+<span class="sd">        The path to the directory containing the domain and instance files.</span>
+<span class="sd">    instances : list</span>
+<span class="sd">        A list of tuples, where each tuple contains a domain file and an instance file.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __repr__() -&gt; str</span>
+<span class="sd">        Returns a string representation of the domain.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path2pddl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">instances_collector</span><span class="p">:</span> <span class="n">InstancesCollector</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs all the necessary attributes for the Domain object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The name of the domain.</span>
+<span class="sd">            path2pddl (str): The path to the directory containing the domain and instance files.</span>
+<span class="sd">            instances_collector (InstancesCollector, optional): An object used to collect instances.</span>
+<span class="sd">                Defaults to None, in which case a new InstancesCollector is created.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path2pddl</span>
+        <span class="k">if</span> <span class="n">instances_collector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">instances_collector</span> <span class="o">=</span> <span class="n">InstancesCollector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="n">instances_collector</span><span class="o">.</span><span class="n">collect_instances</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the domain.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The name of the domain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">planning-experiments</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Luigi Bonassi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
