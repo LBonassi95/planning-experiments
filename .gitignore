@@ -9,3 +9,4 @@ logs
 examples/CLASSICAL_PLANNING_EXAMPLE
 examples/HELLO_WORLD
 build
+/docs/_build/
