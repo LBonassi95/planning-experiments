@@ -32,11 +32,15 @@ def create_summary(blob_path, output_path):
         for domain in blob[planner].keys():
             for instance in blob[planner][domain].keys():
                 record = {SYS: planner, DOM: domain, PROB: instance}
-                record[RT] = extract_float(blob[planner][domain][instance][STDE], r'Total Runtime: (.*)\n')
+                record[RT] = extract_float(blob[planner][domain][instance][STDE], r'real (.*)\n')
                 record[SOL] = False
                 record[PL] = NA
 
-                if blob[planner][domain][instance][NUM_SOLUTIONS] > 0:
+                if blob[planner][domain][instance].get(NUM_SOLUTIONS) is None:
+                    print(f"Error while creating the summary for {planner} {domain} {instance}. Skipping")
+                    record[SOL] = "N/A"
+
+                elif blob[planner][domain][instance][NUM_SOLUTIONS] > 0:
                     record[SOL] = True
                     assert len(blob[planner][domain][instance][SOLUTIONS]) == 1
                 records.append(record)

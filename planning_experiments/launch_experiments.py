@@ -1,7 +1,5 @@
 import os
 import os.path as path
-import sys
-import random
 import datetime
 from planning_experiments.constants import *
 from planning_experiments.data_structures.environment import Domain, Environment, System
@@ -11,17 +9,19 @@ from typing import List
 import json
 import subprocess
 import time
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 from tqdm import tqdm
 from tabulate import tabulate
 from planning_experiments.save_results import save_results
 from planning_experiments.summary import create_summary
+from collections import defaultdict
+
 
 def run_script(script_info: Tuple[str, str]):
     script_name = script_info[0]
     script = script_info[1]
     subprocess.run(f'chmod +x {script}', shell=True)
-    subprocess.run({script}, shell=True)
+    subprocess.run(f'{script}', shell=True)
     return script_name
 
 
@@ -40,8 +40,20 @@ class Executor:
         data.append(['Results folder:', run_folder])
         print(LOGO)
         print(tabulate(data, headers=["Infos", ""], tablefmt="fancy_grid"))
+
+    def check_nruns(self):
+        if self.environment.get_nruns() == 0:
+            raise Exception('No pddl instance provided')
     
     def run_experiments(self, test_run: bool = False):
+        batch2systems = defaultdict(list)
+
+        for system, details in self.environment.run_dictionary.items():
+            batch_id = details.get(BATCH)
+            if batch_id is not None:
+                batch2systems[batch_id.strip()].append(system)
+
+        self.check_nruns()
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
         self.define_paths(exp_id)
 
@@ -53,10 +65,21 @@ class Executor:
             delete_old_folder(self.log_folder)
 
         run_folder = get_run_folder(self.results_folder, exp_id)
+
+        scripts_setup(self.script_folder)
+        # Qsub logs setup
+        os.makedirs(self.log_folder)
+        #################
+
         self.show_info(run_folder)
 
-        script_list, script2blob, blob_path = self.create_scripts(exp_id, run_folder, test_run)
-        self.execute_scripts(script_list, script2blob, run_folder, blob_path)
+        for batch_id in batch2systems.keys():
+            
+            print(f"Running batch: {batch_id}")
+            systems = batch2systems[batch_id]
+
+            script_list, script2blob, blob_path = self.create_scripts(exp_id, run_folder, test_run, systems, batch_id)
+            self.execute_scripts(script_list, run_folder, blob_path, script2blob, batch_id)
     
     def define_paths(self, exp_id):
         self.script_folder = path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER, self.environment.name, exp_id)
@@ -64,15 +87,13 @@ class Executor:
         self.systems_tmp_folder = path.join(self.environment.experiments_folder, PLANNER_COPIES_FOLDER)
         self.log_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
     
-    def create_scripts(self, exp_id: str, run_folder: str,test_run: bool):
+    def create_scripts(self, exp_id: str, run_folder: str, test_run: bool, systems: List[System], batch_id: str):
         script_list = []
-        scripts_setup(self.script_folder)
-        
         blob = {}
-        blob_path = path.join(run_folder, 'blob.json')
+        blob_path = path.join(run_folder, f'blob_{batch_id}.json') if batch_id != '' else path.join(run_folder, f'blob.json')
         script2blob = {}
 
-        for planner in self.environment.run_dictionary.keys():
+        for planner in systems:
             assert isinstance(planner, System)
             blob[planner.get_name()] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
@@ -83,7 +104,7 @@ class Executor:
             json.dump(blob, f, indent=4)
         
         # Make scripts executable
-        subprocess.run(f'chmod +x {self.script_folder}/*', shell=True)
+        subprocess.run(f'chmod -R +x {self.script_folder}', shell=True)
                 
         return script_list, script2blob, blob_path
   
@@ -105,7 +126,7 @@ class Executor:
             create_folder(solution_folder)
 
             solution_name = f'{domain.name}_{instance_name}.sol'
-            script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}.sh'
+            script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}'
             path2domain = path.join(domain.path, pddl_domain)
             path2instance = path.join(domain.path, pddl_instance)
             path2solution = path.join(solution_folder, solution_name)
@@ -130,7 +151,7 @@ class Executor:
                                     system=planner,
                                     domain_name=domain.name,
                                     instance_name=instance_name,
-                                    results=blob_path,
+                                    blob_path=blob_path,
                                     system_dst=path.abspath(copy_planner_dst),
                                     time=str(self.environment.time),
                                     memory=str(self.environment.memory),
@@ -138,62 +159,77 @@ class Executor:
                                     stdo=stdo, 
                                     stde=stde, 
                                     script_name=script_name,
-                                    info_dict_path=blob_path, 
                                     script_folder=self.script_folder)
             
             inner_script, outer_script = builder.get_script()
-            write_script(inner_script, script_name, self.script_folder)
-            write_script(outer_script, f'run_{script_name}', self.script_folder)
-            script_list.append((script_name.replace('.sh', ''), path.join(self.script_folder, f'run_{script_name}')))
-            script2blob[script_name.replace('.sh', '')] = (planner_name, domain.name, instance_name)
+            write_script(inner_script, f"{script_name}.sh", self.script_folder)
+            write_script(outer_script, f'run_{script_name}.py', self.script_folder)
+            script_list.append((script_name, path.join(self.script_folder, f'run_{script_name}.py')))
+            script2blob[script_name] = {'planner': planner_name, 'domain': domain.name, 'instance': instance_name}
 
 
     
-    def is_completed(self, job_infos: Tuple[str, str]):
-        job_id = job_infos[0]
-        output = subprocess.check_output(f'qstat -f {job_id}', shell=True, universal_newlines=True)
-        if 'job_state = C' in output or 'Unknown Job Id' in output:
+    def is_completed(self, job_info: Tuple[str, str]):
+        job_id = job_info[0]
+        try:
+            output = subprocess.check_output(f'qstat -f {job_id}', shell=True, universal_newlines=True)
+            if 'job_state = C' in output:
+                return True
+            else:
+                return False
+            
+        except subprocess.CalledProcessError as e:
             return True
-        else:
-            return False
+        
+        
+    
+    def submit_job(self, args: Tuple[str, str]) -> str:
+
+        script_name, script = args
+
+        qsub_cmd = QSUB_TEMPLATE
+        stdo = path.join(self.log_folder, 'log_{}'.format(script_name))
+        stde = path.join(self.log_folder, 'err_{}'.format(script_name))
+        qsub_cmd = qsub_cmd\
+            .replace(PPN_QSUB, str(self.environment.ppn))\
+            .replace(PRIORITY_QSUB, str(self.environment.priority))\
+            .replace(SCRIPT_QSUB, script)\
+            .replace(LOG_QSUB, stdo)\
+            .replace(ERR_QSUB, stde)
+        job_id = subprocess.check_output(qsub_cmd, shell=True, universal_newlines=True)
+        return job_id.strip(), script_name
 
     
-    def execute_scripts(self, script_list: List[str], script2blob: dict, run_folder: str, blob_path: str):
-        # Qsub logs setup
-        os.makedirs(self.log_folder)
-        #################
+    def execute_scripts(self, script_list: List[Tuple[str, str]], run_folder: str, blob_path: str, script2blob: dict, batch_id: str):
+    
+        print("Ready to launch experiments")
+        print(f"Total number of runs: {len(script_list)}")
 
         if self.environment.qsub:
-            
-            job_infos = []
 
-            for (script_name, script) in script_list:
-                qsub_cmd = QSUB_TEMPLATE
-                stdo = path.join(self.log_folder, 'log_{}'.format(script_name))
-                stde = path.join(self.log_folder, 'err_{}'.format(script_name))
-                qsub_cmd = qsub_cmd\
-                    .replace(PPN_QSUB, str(self.environment.ppn))\
-                    .replace(PRIORITY_QSUB, str(self.environment.priority))\
-                    .replace(SCRIPT_QSUB, script)\
-                    .replace(LOG_QSUB, stdo)\
-                    .replace(ERR_QSUB, stde)
-                job_id = subprocess.check_output(qsub_cmd, shell=True, universal_newlines=True)
-                job_infos.append((job_id.strip(), script_name))
-            
+            pool_size = 16 if cpu_count() > 100 else cpu_count()
+
+            start_time = time.time()
+            with Pool(pool_size) as pool:
+                results = pool.map(self.submit_job, [(script_name, script) for script_name, script in script_list])
+            job_infos = [(job_id, script_name) for job_id, script_name in results]
+            print(f"Time taken to submit all jobs: {time.time() - start_time:.2f} seconds")
+                
 
             running_jobs = set(job_infos)
             progress_bar = tqdm(total=len(running_jobs), desc="Progress", unit="iteration", colour='green')
             while len(running_jobs) > 0:
-                job_completed_so_far = filter(self.is_completed, running_jobs)
-                job_completed_so_far = list(job_completed_so_far)
+
+                with Pool(pool_size) as pool:
+                    completed_flags = pool.map(self.is_completed, running_jobs)
+
+                job_completed_so_far = {job for job, completed in zip(running_jobs, completed_flags) if completed}
                 running_jobs = running_jobs.difference(job_completed_so_far)
                 if len(job_completed_so_far) > 0:
+                    for _, script_name in job_completed_so_far:
+                        save_results(blob_path, script2blob[script_name]["planner"], script2blob[script_name]["domain"], script2blob[script_name]["instance"])
                     progress_bar.update(len(job_completed_so_far))
-
-                    for job_id, script_name in job_completed_so_far:
-                        planner, domain, instance = script2blob[script_name]
-                        save_results(blob_path, planner, domain, instance)
-
+                    
                 time.sleep(5)
             
             progress_bar.close()
@@ -203,12 +239,11 @@ class Executor:
             progress_bar = tqdm(total=len(scripts_infos), desc="Progress", unit="iteration", colour='green')
             with Pool(self.environment.parallel_processes) as p:
                 for script_name in p.imap_unordered(run_script, scripts_infos):
-                    planner, domain, instance = script2blob[script_name]
-                    save_results(blob_path, planner, domain, instance)
+                    save_results(blob_path, script2blob[script_name]["planner"], script2blob[script_name]["domain"], script2blob[script_name]["instance"])
                     progress_bar.update(1)
 
                 progress_bar.close()
         
         # Create summary
-        summary_path = path.join(run_folder, 'summary.csv')
+        summary_path = path.join(run_folder, f"summary_{batch_id}.csv") if batch_id != '' else path.join(run_folder, f"summary.csv")
         create_summary(blob_path, summary_path)

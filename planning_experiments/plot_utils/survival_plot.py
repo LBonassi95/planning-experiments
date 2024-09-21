@@ -10,6 +10,7 @@ class SurvivalPlot:
         fontsize: int = 12,
         num_points: int = 1000,
         logscale: bool = False,
+        verbose: bool = False,
         legends_kwargs: dict = {},
         plot_kwargs: dict = {},
         line_colors: dict = {},
@@ -20,6 +21,7 @@ class SurvivalPlot:
         self.num_points = num_points
         self.logscale = logscale
         self.fontsize = fontsize
+        self.verbose = verbose
         self.legends_kwargs = legends_kwargs
         self.plot_kwargs = plot_kwargs
         self.line_colors = line_colors
@@ -42,6 +44,8 @@ class SurvivalPlot:
         systems = set(df[SYS])
         df = df[df[SOL] == True]
 
+        self.coverage_over_time_dict = {i: {} for i in x}
+
         for system in systems:
             legend.append(get_legend_entry(self.system_legend, system))
             df_system = df[df[SYS] == system]
@@ -50,6 +54,7 @@ class SurvivalPlot:
             for i in range(len(x)):
                 current_time = x[i]
                 y[i] = len([r for r in runtimes if r <= current_time])
+                self.coverage_over_time_dict[current_time][system] = y[i]
 
             plt.plot(x, y, antialiased=True, label=system, color=get_color(self.line_colors, system, self._color_index), 
                      linestyle=get_linestyle(self.line_styles, system), **self.plot_kwargs)
