@@ -15,7 +15,7 @@ from tabulate import tabulate
 from planning_experiments.save_results import save_results
 from planning_experiments.summary import create_summary
 from collections import defaultdict
-
+from pathlib import PosixPath
 
 def run_script(script_info: Tuple[str, str]):
     script_name = script_info[0]
@@ -115,9 +115,9 @@ class Executor:
         if test_run:
             instances = instances[:2]
 
-        for pddl_domain, pddl_instance in instances:
-
-            instance_name = pddl_instance.replace(PDDL_EXTENSION, '')
+        for pddl_domain_path, pddl_instance_path in instances:
+            assert isinstance(pddl_instance_path, PosixPath)
+            instance_name = pddl_instance_path.name.replace(PDDL_EXTENSION, '')
 
             instance_folder = path.join(run_folder, planner_name, domain.name, instance_name)
             create_folder(instance_folder)
@@ -127,17 +127,15 @@ class Executor:
 
             solution_name = f'{domain.name}_{instance_name}.sol'
             script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}'
-            path2domain = path.join(domain.path, pddl_domain)
-            path2instance = path.join(domain.path, pddl_instance)
             path2solution = path.join(solution_folder, solution_name)
             stde = path.abspath(path.join(instance_folder, f'err_{domain.name}_{instance_name}.txt'))
             stdo = path.abspath(path.join(instance_folder, f'out_{domain.name}_{instance_name}.txt'))
-            planner_exe = planner.get_cmd(path2domain, path2instance, path2solution)
+            planner_exe = planner.get_cmd(pddl_domain_path, pddl_instance_path, path2solution)
 
             # Collecting info #################
             blob[planner_name][domain.name][instance_name] = {}
-            blob[planner_name][domain.name][instance_name][DOMAIN_PATH] = path2domain
-            blob[planner_name][domain.name][instance_name][INSTANCE_PATH] = path2instance
+            blob[planner_name][domain.name][instance_name][DOMAIN_PATH] = pddl_domain_path
+            blob[planner_name][domain.name][instance_name][INSTANCE_PATH] = pddl_instance_path
             blob[planner_name][domain.name][instance_name][SOLUTION_PATH] = solution_folder
             blob[planner_name][domain.name][instance_name][STDE] = stde
             blob[planner_name][domain.name][instance_name][STDO] = stdo

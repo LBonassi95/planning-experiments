@@ -24,15 +24,15 @@ class InstancesCollector:
         pddl_instances = []
         for file in get_pddl_files(instances_path):
             if self.is_domain(file.name):
-                pddl_domains.append(file.name)
+                pddl_domains.append(file)
             elif self.is_instance(file.name):
-                pddl_instances.append(file.name)
+                pddl_instances.append(file)
 
         if len(pddl_domains) != 1 and len(pddl_domains) != len(pddl_instances):
             raise Exception(DOMAIN_INSTANCES_ERROR)
         
-        pddl_instances.sort()
-        pddl_domains.sort()
+        pddl_instances.sort(key=lambda x: x.name)
+        pddl_domains.sort(key=lambda x: x.name)
         pairs = []
         for i in range(len(pddl_instances)):
             if len(pddl_domains) == 1:
