@@ -14,6 +14,8 @@ def test_pddl_collection():
     assert len(blocksworld.instances)  == 2
     assert len(rovers.instances)  == 3
     assert len(rovers_alt.instances)  == 3
+    for d, p in rovers_alt.instances:
+        assert d.name.split('_')[1] == p.name
 
 
 if __name__ == "__main__":
