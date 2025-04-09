@@ -1,10 +1,13 @@
 from planning_experiments.constants import PDDL_EXTENSION, DOMAIN_STR_CONST, DOMAIN_INSTANCES_ERROR
-from pathlib import Path
+import os
 
 
 def get_pddl_files(directory):
-    path = Path(directory)
-    pddl_files = list(path.rglob(f'*{PDDL_EXTENSION}'))  # Recursively find all .pddl files
+    pddl_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.pddl'):
+                pddl_files.append(os.path.join(root, file))
     return pddl_files
 
 def _is_domain(file: str):
@@ -23,16 +26,16 @@ class InstancesCollector:
         pddl_domains = []
         pddl_instances = []
         for file in get_pddl_files(instances_path):
-            if self.is_domain(file.name):
+            if self.is_domain(file):
                 pddl_domains.append(file)
-            elif self.is_instance(file.name):
+            elif self.is_instance(file):
                 pddl_instances.append(file)
 
         if len(pddl_domains) != 1 and len(pddl_domains) != len(pddl_instances):
             raise Exception(DOMAIN_INSTANCES_ERROR)
         
-        pddl_instances.sort(key=lambda x: x.name)
-        pddl_domains.sort(key=lambda x: x.name)
+        pddl_instances.sort(key=lambda x: os.path.basename(x))
+        pddl_domains.sort(key=lambda x: os.path.basename(x))
         pairs = []
         for i in range(len(pddl_instances)):
             if len(pddl_domains) == 1:

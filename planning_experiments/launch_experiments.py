@@ -15,7 +15,6 @@ from tabulate import tabulate
 from planning_experiments.save_results import save_results
 from planning_experiments.summary import create_summary
 from collections import defaultdict
-from pathlib import PosixPath
 
 def run_script(script_info: Tuple[str, str]):
     script_name = script_info[0]
@@ -116,8 +115,7 @@ class Executor:
             instances = instances[:2]
 
         for pddl_domain_path, pddl_instance_path in instances:
-            assert isinstance(pddl_instance_path, PosixPath)
-            instance_name = pddl_instance_path.name.replace(PDDL_EXTENSION, '')
+            instance_name = path.basename(pddl_instance_path).replace(PDDL_EXTENSION, '')
 
             instance_folder = path.join(run_folder, planner_name, domain.name, instance_name)
             create_folder(instance_folder)
