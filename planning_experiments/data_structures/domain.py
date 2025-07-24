@@ -1,5 +1,14 @@
-import os
 from planning_experiments.constants import PDDL_EXTENSION, DOMAIN_STR_CONST, DOMAIN_INSTANCES_ERROR
+import os
+
+
+def get_pddl_files(directory):
+    pddl_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.pddl'):
+                pddl_files.append(os.path.join(root, file))
+    return pddl_files
 
 def _is_domain(file: str):
     return PDDL_EXTENSION in file and DOMAIN_STR_CONST in file
@@ -13,17 +22,20 @@ class InstancesCollector:
         self.is_instance = is_instance
 
     def collect_instances(self, instances_path):
+
         pddl_domains = []
         pddl_instances = []
-        for file in os.listdir(instances_path):
+        for file in get_pddl_files(instances_path):
             if self.is_domain(file):
                 pddl_domains.append(file)
             elif self.is_instance(file):
                 pddl_instances.append(file)
+
         if len(pddl_domains) != 1 and len(pddl_domains) != len(pddl_instances):
             raise Exception(DOMAIN_INSTANCES_ERROR)
-        pddl_instances.sort()
-        pddl_domains.sort()
+        
+        pddl_instances.sort(key=lambda x: os.path.basename(x))
+        pddl_domains.sort(key=lambda x: os.path.basename(x))
         pairs = []
         for i in range(len(pddl_instances)):
             if len(pddl_domains) == 1:

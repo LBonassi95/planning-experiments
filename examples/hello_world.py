@@ -1,10 +1,9 @@
 from planning_experiments.data_structures import *
 from planning_experiments.launch_experiments import Executor
-from os import path
-import pkg_resources
+from pathlib import Path
 
-PDDL_PATH = pkg_resources.resource_filename(__name__, 'pddl/')
-MY_PLANNER_PATH = path.join(pkg_resources.resource_filename(__name__, 'systems/'), 'MyPlanner')
+PDDL_PATH = Path(__file__).parent /  "pddl"
+MY_PLANNER_PATH = Path(__file__).parent / "systems" / "MyPlanner"
 
 
 class MyPlannerWrapper(Planner):
@@ -20,13 +19,13 @@ class MyPlannerWrapper(Planner):
 
 def main():
 
-    results_folder = pkg_resources.resource_filename(__name__, 'HELLO_WORLD')
+    results_folder = Path(__file__).parent / 'HELLO_WORLD'
     env = Environment(results_folder, name='TEST')
     
     my_planner = MyPlannerWrapper('my_planner', MY_PLANNER_PATH, search_engine="astar", heuristic="hmax")
 
-    blocksworld = Domain('blocksworld', path.join(PDDL_PATH, 'blocksworld'))
-    rovers = Domain('rovers', path.join(PDDL_PATH, 'rovers'))
+    blocksworld = Domain('blocksworld', PDDL_PATH / 'blocksworld')
+    rovers = Domain('rovers', PDDL_PATH / 'rovers')
 
     env.add_run(system=my_planner, domains=[blocksworld, rovers])
     env.set_time(10)
