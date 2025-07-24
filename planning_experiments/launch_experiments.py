@@ -2,7 +2,8 @@ import os
 import os.path as path
 import datetime
 from planning_experiments.constants import *
-from planning_experiments.data_structures.environment import Domain, Environment, System
+from planning_experiments.data_structures.environment import Domain, Environment, ScriptEnvironment
+from planning_experiments.data_structures.system import *
 from planning_experiments.script_builder import ScriptBuilder
 from planning_experiments.utils import *
 from typing import List
@@ -13,8 +14,10 @@ from multiprocessing import Pool, cpu_count
 from tqdm import tqdm
 from tabulate import tabulate
 from planning_experiments.save_results import save_results
-from planning_experiments.summary import create_summary
+from planning_experiments.summary import create_summary, extract_float
 from collections import defaultdict
+import pandas as pd
+import fcntl
 
 def run_script(script_info: Tuple[str, str]):
     script_name = script_info[0]
@@ -243,3 +246,126 @@ class Executor:
         # Create summary
         summary_path = path.join(run_folder, f"summary_{batch_id}.csv") if batch_id != '' else path.join(run_folder, f"summary.csv")
         create_summary(blob_path, summary_path)
+
+
+class ScriptExecutor(Executor):
+
+    def __init__(self, environment: ScriptEnvironment, short_name: str = '') -> None:
+        super().__init__(environment, short_name)
+        if self.environment.qsub:
+            raise ValueError(f"Qsub currently not supported by {__class__}")
+    
+    def create_scripts(self, exp_id: str, run_folder: str, test_run: bool, systems: List[ScriptSystem], batch_id: str):
+        script_list = []
+        blob = {}
+        blob_path = path.join(run_folder, f'blob_{batch_id}.json') if batch_id != '' else path.join(run_folder, f'blob.json')
+        script2blob = {}
+
+        for system in systems:
+            blob[system.get_name()] = {}
+            for i in range(self.environment.run_dictionary[system][NRUNS]):
+                blob[system.get_name()][f"run_{i}"] = {}
+                self._create_script(system, i, run_folder, script_list, blob, script2blob)
+
+        with open(blob_path, 'w') as f:
+            json.dump(blob, f, indent=4)
+        
+        # Make scripts executable
+        subprocess.run(f'chmod -R +x {self.script_folder}', shell=True)
+                
+        return script_list, script2blob, blob_path
+    
+
+    def _create_script(self, system: ScriptSystem, run: int, run_folder: str, script_list: List[str], blob: dict, script2blob: dict):
+        system_name = system.get_name()
+        run_id = f"run_{str(run)}"
+        solution_folder = path.join(run_folder, system_name, run_id)
+        create_folder(solution_folder)
+
+        script_name = f'{self.environment.name}_{system_name}_{run_id}'
+        out_path = path.join(solution_folder, f'{system_name}_{run_id}.sol')
+        stde = path.abspath(path.join(solution_folder, f'err_{system_name}_{run_id}.txt'))
+        stdo = path.abspath(path.join(solution_folder, f'out_{system_name}_{run_id}.txt'))
+        system_exe = system.get_cmd(out_path)
+
+        # Collecting info #################
+        blob[system_name][run_id] = {}
+        blob[system_name][run_id][SOLUTION_PATH] = solution_folder
+        blob[system_name][run_id][STDE] = stde
+        blob[system_name][run_id][STDO] = stdo
+        blob[system_name][run_id][PLANNER_EXE] = system_exe
+        ###################################
+
+        memory = str(self.environment.memory)
+        time = str(self.environment.time)
+
+        launch_script = ['#!/bin/bash', f'cd {solution_folder}']
+        if memory != 'None': launch_script.append(f'ulimit -Sv {memory}')
+
+        if time != "None": exec_cmd = f'(time -p timeout --signal=HUP {time} {system_exe}) 2>> {stde} 1>> {stdo}'
+        else: exec_cmd = f'(time -p {system_exe}) 2>> {stde} 1>> {stdo}'
+
+        launch_script.append(exec_cmd)
+        
+        write_script("\n".join(launch_script), f"{script_name}.sh", self.script_folder)
+        script_list.append((script_name, path.join(self.script_folder, f"{script_name}.sh")))
+        script2blob[script_name] = {'planner': system_name, 'run_id': run_id}
+
+    
+    def execute_scripts(self, script_list: List[Tuple[str, str]], run_folder: str, blob_path: str, script2blob: dict, batch_id: str):
+    
+        print("Ready to launch experiments")
+        print(f"Total number of runs: {len(script_list)}")
+
+        scripts_infos = [(script_name, script) for script_name, script in script_list]
+        progress_bar = tqdm(total=len(scripts_infos), desc="Progress", unit="iteration", colour='green')
+        with Pool(self.environment.parallel_processes) as p:
+            for script_name in p.imap_unordered(run_script, scripts_infos):
+                self.save_results(blob_path, script2blob[script_name]["planner"], script2blob[script_name]["run_id"])
+                progress_bar.update(1)
+
+            progress_bar.close()
+
+        
+    
+    def save_results(self, results_file, system, run_id):
+        file = open(results_file, "r+")
+
+        fcntl.flock(file, fcntl.LOCK_EX)
+
+        json_data = json.load(file)
+
+        try:
+            stdo_path = json_data[system][run_id][STDO]
+            stde_path = json_data[system][run_id][STDE]
+
+            stdo_str = open(stdo_path, 'r').read()
+            stde_str = open(stde_path, 'r').read()
+
+            for sol_file in os.listdir(json_data[system][run_id][SOLUTION_PATH]):
+                if '.sol' in sol_file:
+                    json_data[system][run_id][SOLUTIONS] = open(os.path.join(json_data[system][run_id][SOLUTION_PATH], sol_file), 'r').read()
+                    break
+
+            json_data[system][run_id][STDO] = stdo_str
+            json_data[system][run_id][STDE] = stde_str
+
+            
+            file.seek(0)
+            file.truncate()
+            json.dump(json_data, file, indent=4)
+            fcntl.flock(file, fcntl.LOCK_UN)
+            file.close()
+
+        except Exception as e:
+            json_data[system][run_id][SOLUTIONS] = []
+            json_data[system][run_id][NUM_SOLUTIONS] = -1
+            json_data[system][run_id][STDO] = "RUN SKIPPED DUE TO AN UNEXPECTED ERROR"
+            json_data[system][run_id][STDE] = "RUN SKIPPED DUE TO AN UNEXPECTED ERROR"
+
+            
+            file.seek(0)
+            file.truncate()
+            json.dump(json_data, file, indent=4)
+            fcntl.flock(file, fcntl.LOCK_UN)
+            file.close()

@@ -1,4 +1,5 @@
 from typing import List
+from pathlib import Path
 
 class System:
     def __init__(self, name: str) -> None:
@@ -26,6 +27,24 @@ class System:
     
     def get_dependencies(self) -> List[str]:
         raise NotImplementedError
+    
+
+class ScriptSystem(System):
+
+    def __init__(self, name: str, script_path: str, *args) -> None:
+        super().__init__(name)
+        self.script_path = script_path
+        self.args = args
+    
+    def __hash__(self) -> int:
+        return hash((self.__class__, self.get_name(), self.args))
+
+    def get_cmd(self, domain_path: str, instance_path: str, solution_path: str) -> List[str]:
+        raise NotImplementedError
+    
+    def get_path(self) -> str:
+        return self.script_path
+    
 
 class Planner(System):
 

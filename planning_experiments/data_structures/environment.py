@@ -93,3 +93,20 @@ class Environment:
             data.append(["Multiprocessing", "True"])
             data.append(["Parallel processes", self.parallel_processes])
         return data
+    
+
+class ScriptEnvironment(Environment):
+
+    def __init__(self, experiments_folder: str, name: str) -> None:
+        super().__init__(experiments_folder, name)
+        self.nruns = 0
+
+    def add_run(self, system: System, batch_id: str = DEFAULT_BATCH):
+        if self.run_dictionary.get(system) is not None:
+            self.run_dictionary[system][NRUNS] += 1
+        else:
+            self.run_dictionary[system] = {BATCH: batch_id, NRUNS: 1}
+        self.nruns += 1
+    
+    def get_nruns(self):
+        return self.nruns
