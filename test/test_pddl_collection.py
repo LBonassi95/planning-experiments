@@ -2,7 +2,6 @@ from planning_experiments.data_structures import *
 from planning_experiments.launch_experiments import Executor
 from pathlib import Path
 from os import path
-import pkg_resources
 
 PDDL_PATH = Path(__file__).parent /  "pddl"
 

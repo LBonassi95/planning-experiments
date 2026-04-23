@@ -3,7 +3,6 @@ import os
 from planning_experiments.constants import *
 from planning_experiments.data_structures.system import System
 from planning_experiments.data_structures.domain import Domain
-import pkg_resources
 
 ERROR_SYSTEM_ALREADY_ADDED = '''
 System "{system}" was already added to the environment.

@@ -11,10 +11,10 @@ def get_pddl_files(directory):
     return pddl_files
 
 def _is_domain(file: str):
-    return PDDL_EXTENSION in file and DOMAIN_STR_CONST in file
+    return PDDL_EXTENSION in file and DOMAIN_STR_CONST in os.path.basename(file)
 
 def _is_instance(file: str):
-    return PDDL_EXTENSION in file and DOMAIN_STR_CONST not in file
+    return PDDL_EXTENSION in file and DOMAIN_STR_CONST not in os.path.basename(file)
 
 class InstancesCollector:
     def __init__(self, is_domain=_is_domain, is_instance=_is_instance) -> None:

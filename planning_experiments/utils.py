@@ -3,7 +3,6 @@ from os import path
 from planning_experiments.constants import *
 from planning_experiments.data_structures import *
 from typing import Tuple
-import pkg_resources
 import subprocess
 import signal
 import sys
