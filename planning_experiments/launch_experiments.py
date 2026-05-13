@@ -2,7 +2,8 @@ import os
 import os.path as path
 import datetime
 from planning_experiments.constants import *
-from planning_experiments.data_structures.environment import Domain, Environment, System
+from planning_experiments.data_structures.environment import Domain, Environment, Planner
+from planning_experiments.data_structures.system import RunContext
 from planning_experiments.script_builder import ScriptBuilder
 from planning_experiments.utils import *
 from typing import List
@@ -59,7 +60,7 @@ class Executor:
         if self.environment.clean_systems:
             delete_old_folder(self.systems_tmp_folder)
         if self.environment.clean_scripts:
-            delete_old_folder(path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER))
+            delete_old_folder(path.join(self.environment.experiments_root, self.environment.SCRIPTS_FOLDER))
         if self.environment.clean_logs:
             delete_old_folder(self.log_folder)
 
@@ -81,19 +82,19 @@ class Executor:
             self.execute_scripts(script_list, run_folder, blob_path, script2blob, batch_id)
     
     def define_paths(self, exp_id):
-        self.script_folder = path.join(self.environment.experiments_folder, self.environment.SCRIPTS_FOLDER, self.environment.name, exp_id)
-        self.results_folder = path.join(self.environment.experiments_folder, self.environment.RESULTS_FOLDER, self.environment.name)
-        self.systems_tmp_folder = path.join(self.environment.experiments_folder, PLANNER_COPIES_FOLDER)
-        self.log_folder = path.join(self.environment.experiments_folder, LOG_FOLDER, self.environment.name)
+        self.script_folder = path.join(self.environment.experiments_root, self.environment.SCRIPTS_FOLDER, self.environment.experiment_group, exp_id)
+        self.results_folder = path.join(self.environment.experiments_root, self.environment.RESULTS_FOLDER, self.environment.experiment_group)
+        self.systems_tmp_folder = path.join(self.environment.experiments_root, PLANNER_COPIES_FOLDER)
+        self.log_folder = path.join(self.environment.experiments_root, LOG_FOLDER, self.environment.experiment_group)
     
-    def create_scripts(self, exp_id: str, run_folder: str, test_run: bool, systems: List[System], batch_id: str):
+    def create_scripts(self, exp_id: str, run_folder: str, test_run: bool, systems: List[Planner], batch_id: str):
         script_list = []
         blob = {}
         blob_path = path.join(run_folder, f'blob_{batch_id}.json') if batch_id != '' else path.join(run_folder, f'blob.json')
         script2blob = {}
 
         for planner in systems:
-            assert isinstance(planner, System)
+            assert isinstance(planner, Planner)
             blob[planner.get_name()] = {}
             for domain in self.environment.run_dictionary[planner][DOMAINS]:
                 blob[planner.get_name()][domain.name] = {}
@@ -107,7 +108,7 @@ class Executor:
                 
         return script_list, script2blob, blob_path
   
-    def _create_script(self, planner: System, domain: Domain, exp_id: str, run_folder: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool, script2blob: dict):
+    def _create_script(self, planner: Planner, domain: Domain, exp_id: str, run_folder: str, script_list: List[str], blob: dict, blob_path: str, test_run: bool, script2blob: dict):
         planner_name = planner.get_name()
         
         instances = domain.instances
@@ -124,11 +125,11 @@ class Executor:
             create_folder(solution_folder)
 
             solution_name = f'{domain.name}_{instance_name}.sol'
-            script_name = f'{self.environment.name}_{planner_name}_{domain.name}_{instance_name}'
+            script_name = f'{self.environment.experiment_group}_{planner_name}_{domain.name}_{instance_name}'
             path2solution = path.join(solution_folder, solution_name)
             stde = path.abspath(path.join(instance_folder, f'err_{domain.name}_{instance_name}.txt'))
             stdo = path.abspath(path.join(instance_folder, f'out_{domain.name}_{instance_name}.txt'))
-            planner_exe = planner.get_cmd(pddl_domain_path, pddl_instance_path, path2solution)
+            planner_exe = planner.get_cmd(RunContext(pddl_domain_path, pddl_instance_path, path2solution))
 
             # Collecting info #################
             blob[planner_name][domain.name][instance_name] = {}
@@ -141,7 +142,7 @@ class Executor:
             ###################################
             
             copy_planner_dst, planner_source = manage_planner_copy(
-                self.systems_tmp_folder, self.environment.name, planner, domain, instance_name, exp_id)
+                self.systems_tmp_folder, self.environment.experiment_group, planner, domain, instance_name, exp_id)
 
             builder = ScriptBuilder(self.environment, 
                                     system=planner,

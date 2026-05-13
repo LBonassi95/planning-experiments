@@ -30,7 +30,7 @@ def create_folder(folder_path: str):
         os.makedirs(folder_path)
 
 
-def manage_planner_copy(systems_tmp_folder: str, name: str, planner: System, domain: str, instance: str, exp_id: str) -> Tuple[str, str]:
+def manage_planner_copy(systems_tmp_folder: str, name: str, planner: Planner, domain: str, instance: str, exp_id: str) -> Tuple[str, str]:
     if not path.isdir(systems_tmp_folder):
         os.makedirs(systems_tmp_folder)
     copy_planner_dst = path.join(systems_tmp_folder,

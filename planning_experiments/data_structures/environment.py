@@ -1,7 +1,7 @@
 from typing import List, Tuple
 import os
 from planning_experiments.constants import *
-from planning_experiments.data_structures.system import System
+from planning_experiments.data_structures.system import Planner
 from planning_experiments.data_structures.domain import Domain
 
 ERROR_SYSTEM_ALREADY_ADDED = '''
@@ -17,10 +17,10 @@ class Environment:
     SCRIPTS_FOLDER = 'scripts'
     RESULTS_FOLDER = 'results'
 
-    def __init__(self, experiments_folder: str, name: str) -> None:
-        self.experiments_folder = experiments_folder
+    def __init__(self, experiments_root: str, experiment_group: str = "run") -> None:
+        self.experiments_root = experiments_root
         self.run_dictionary = {}
-        self.name = name
+        self.experiment_group = experiment_group
         self.memory = DEFAULT_MEM
         self.time = DEFAULT_TIME
         self.delete_systems = True
@@ -32,7 +32,7 @@ class Environment:
         self.qsub = False
         self.parallel_processes = 8
 
-    def add_run(self, system: System, domains: List[Domain], batch_id: str = DEFAULT_BATCH):
+    def add_run(self, system: Planner, domains: List[Domain], batch_id: str = DEFAULT_BATCH):
 
         if self.run_dictionary.get(system, None) is not None:
             raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system=system))
@@ -80,7 +80,7 @@ class Environment:
 
     def get_info(self):
         data = [
-            ["Environment", self.name],
+            ["Environment", self.experiment_group],
             ["Memory", f'{self.memory} KB'],
             ["Time", f'{self.time}s'],
         ]
