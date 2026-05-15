@@ -32,7 +32,6 @@ class Executor:
         self.short_name = short_name
         self.script_folder = None
         self.results_folder = None
-        self.systems_tmp_folder = None
         self.log_folder = None
     
     def show_info(self, run_folder: str):
@@ -57,8 +56,8 @@ class Executor:
         exp_id = self.short_name + str(datetime.datetime.now()).replace(' ', '_').split('.')[0]
         self.define_paths(exp_id)
 
-        if self.environment.clean_systems:
-            delete_old_folder(self.systems_tmp_folder)
+        # if self.environment.clean_systems:
+        #     delete_old_folder(self.systems_tmp_folder)
         if self.environment.clean_scripts:
             delete_old_folder(path.join(self.environment.experiments_root, self.environment.SCRIPTS_FOLDER))
         if self.environment.clean_logs:
@@ -84,7 +83,7 @@ class Executor:
     def define_paths(self, exp_id):
         self.script_folder = path.join(self.environment.experiments_root, self.environment.SCRIPTS_FOLDER, self.environment.experiment_group, exp_id)
         self.results_folder = path.join(self.environment.experiments_root, self.environment.RESULTS_FOLDER, self.environment.experiment_group)
-        self.systems_tmp_folder = path.join(self.environment.experiments_root, PLANNER_COPIES_FOLDER)
+        # self.systems_tmp_folder = path.join(self.environment.experiments_root, PLANNER_COPIES_FOLDER)
         self.log_folder = path.join(self.environment.experiments_root, LOG_FOLDER, self.environment.experiment_group)
     
     def create_scripts(self, exp_id: str, run_folder: str, test_run: bool, systems: List[Planner], batch_id: str):
@@ -129,7 +128,8 @@ class Executor:
             path2solution = path.join(solution_folder, solution_name)
             stde = path.abspath(path.join(instance_folder, f'err_{domain.name}_{instance_name}.txt'))
             stdo = path.abspath(path.join(instance_folder, f'out_{domain.name}_{instance_name}.txt'))
-            planner_exe = planner.get_cmd(RunContext(pddl_domain_path, pddl_instance_path, path2solution))
+            planner_path = path.join(instance_folder, SANDBOX_FOLDER, PLANNERS_FOLDER)
+            planner_exe = planner.get_cmd(RunContext(pddl_domain_path, pddl_instance_path, path2solution, planner_path))
 
             # Collecting info #################
             blob[planner_name][domain.name][instance_name] = {}
@@ -141,18 +141,19 @@ class Executor:
             blob[planner_name][domain.name][instance_name][PLANNER_EXE] = planner_exe
             ###################################
             
-            copy_planner_dst, planner_source = manage_planner_copy(
-                self.systems_tmp_folder, self.environment.experiment_group, planner, domain, instance_name, exp_id)
+            # copy_planner_dst, planner_source = manage_planner_copy(
+            #     self.systems_tmp_folder, self.environment.experiment_group, planner, domain, instance_name, exp_id)
 
             builder = ScriptBuilder(self.environment, 
                                     system=planner,
                                     domain_name=domain.name,
                                     instance_name=instance_name,
                                     blob_path=blob_path,
-                                    system_dst=path.abspath(copy_planner_dst),
+                                    # system_dst=path.abspath(copy_planner_dst),
                                     time=str(self.environment.time),
                                     memory=str(self.environment.memory),
                                     system_exe=planner_exe,
+                                    instance_folder=instance_folder,
                                     stdo=stdo, 
                                     stde=stde, 
                                     script_name=script_name,
@@ -203,33 +204,37 @@ class Executor:
         print(f"Total number of runs: {len(script_list)}")
 
         if self.environment.qsub:
+            scripts_infos = [(script_name, script) for script_name, script in script_list]
+            for name, script_path in scripts_infos:
+                cmd = f"sbatch --mem=8GB --output={self.log_folder}/{name}.out --error={self.log_folder}/{name}.err --cpus-per-task=1 {script_path}"
+                subprocess.check_output(cmd, shell=True)
 
-            pool_size = 16 if cpu_count() > 100 else cpu_count()
+            # pool_size = 16 if cpu_count() > 100 else cpu_count()
 
-            start_time = time.time()
-            with Pool(pool_size) as pool:
-                results = pool.map(self.submit_job, [(script_name, script) for script_name, script in script_list])
-            job_infos = [(job_id, script_name) for job_id, script_name in results]
-            print(f"Time taken to submit all jobs: {time.time() - start_time:.2f} seconds")
+            # start_time = time.time()
+            # with Pool(pool_size) as pool:
+            #     results = pool.map(self.submit_job, [(script_name, script) for script_name, script in script_list])
+            # job_infos = [(job_id, script_name) for job_id, script_name in results]
+            # print(f"Time taken to submit all jobs: {time.time() - start_time:.2f} seconds")
                 
 
-            running_jobs = set(job_infos)
-            progress_bar = tqdm(total=len(running_jobs), desc="Progress", unit="iteration", colour='green')
-            while len(running_jobs) > 0:
+            # running_jobs = set(job_infos)
+            # progress_bar = tqdm(total=len(running_jobs), desc="Progress", unit="iteration", colour='green')
+            # while len(running_jobs) > 0:
 
-                with Pool(pool_size) as pool:
-                    completed_flags = pool.map(self.is_completed, running_jobs)
+            #     with Pool(pool_size) as pool:
+            #         completed_flags = pool.map(self.is_completed, running_jobs)
 
-                job_completed_so_far = {job for job, completed in zip(running_jobs, completed_flags) if completed}
-                running_jobs = running_jobs.difference(job_completed_so_far)
-                if len(job_completed_so_far) > 0:
-                    for _, script_name in job_completed_so_far:
-                        save_results(blob_path, script2blob[script_name]["planner"], script2blob[script_name]["domain"], script2blob[script_name]["instance"])
-                    progress_bar.update(len(job_completed_so_far))
+            #     job_completed_so_far = {job for job, completed in zip(running_jobs, completed_flags) if completed}
+            #     running_jobs = running_jobs.difference(job_completed_so_far)
+            #     if len(job_completed_so_far) > 0:
+            #         for _, script_name in job_completed_so_far:
+            #             save_results(blob_path, script2blob[script_name]["planner"], script2blob[script_name]["domain"], script2blob[script_name]["instance"])
+            #         progress_bar.update(len(job_completed_so_far))
                     
-                time.sleep(5)
+            #     time.sleep(5)
             
-            progress_bar.close()
+            # progress_bar.close()
             
         else:
             scripts_infos = [(script_name, script) for script_name, script in script_list]

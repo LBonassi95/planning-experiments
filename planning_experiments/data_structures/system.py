@@ -1,10 +1,24 @@
 from typing import List
+import os
 
 class RunContext:
-    def __init__(self, domain_path: str, problem_path: str, solution_path: str):
+    def __init__(self, domain_path: str, problem_path: str, solution_path: str, planner_path: str):
         self.domain_path = domain_path
         self.problem_path = problem_path
         self.solution_path = solution_path
+        self.planner_path = planner_path
+
+    def planner_command(self, launch_script: str, interpreter: str = None):
+        """
+        Given a launch_script, this function will build the command 
+        to launch the planner from its sandbox
+        """
+        abs_script_path = os.path.join(self.planner_path, launch_script)
+
+        if interpreter is None:
+            return abs_script_path
+
+        return f"{interpreter} {abs_script_path}"
 
 class Planner:
     def __init__(self, name: str, planner_root: str, launch_script: str) -> None:

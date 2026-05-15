@@ -30,14 +30,14 @@ def create_folder(folder_path: str):
         os.makedirs(folder_path)
 
 
-def manage_planner_copy(systems_tmp_folder: str, name: str, planner: Planner, domain: str, instance: str, exp_id: str) -> Tuple[str, str]:
-    if not path.isdir(systems_tmp_folder):
-        os.makedirs(systems_tmp_folder)
-    copy_planner_dst = path.join(systems_tmp_folder,
-                                 'copy_{name}_{planner}_{domain}_{instance}_{exp_id}'
-                                 .format(name=name, planner=planner.get_name(), domain=domain, instance=instance, exp_id=exp_id))
-    planner_source = path.join(planner.get_path())
-    return copy_planner_dst, planner_source
+# def manage_planner_copy(systems_tmp_folder: str, name: str, planner: Planner, domain: str, instance: str, exp_id: str) -> Tuple[str, str]:
+#     if not path.isdir(systems_tmp_folder):
+#         os.makedirs(systems_tmp_folder)
+#     copy_planner_dst = path.join(systems_tmp_folder,
+#                                  'copy_{name}_{planner}_{domain}_{instance}_{exp_id}'
+#                                  .format(name=name, planner=planner.get_name(), domain=domain, instance=instance, exp_id=exp_id))
+#     planner_source = path.join(planner.get_path())
+#     return copy_planner_dst, planner_source
     
 
 def write_script(shell_script, script_name, script_dst):

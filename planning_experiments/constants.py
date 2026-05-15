@@ -41,6 +41,9 @@ BIN_FOLDER = 'bin'
 
 SOLUTION_FOLDER = 'solutions'
 
+SANDBOX_FOLDER = 'sandbox'
+PLANNER_FOLDER = 'planner'
+
 
 # Blob keys
 PLANNER_EXE = 'planner_exe'

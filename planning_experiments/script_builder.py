@@ -12,9 +12,10 @@ class ScriptBuilder:
                        domain_name: str,
                        instance_name: str,
                        blob_path: str,
-                       system_dst: str,
+                    #    system_dst: str,
                        time: int,
                        system_exe: str,
+                       instance_folder: str,
                        stdo: str,
                        stde: str,
                        script_name: str,
@@ -26,9 +27,10 @@ class ScriptBuilder:
         self.inner_script = []
         self.outer_script = []
         self.memory = memory
-        self.system_dst = system_dst
+        # self.system_dst = system_dst
         self.time = time
         self.system_exe = system_exe
+        self.instance_folder = instance_folder
         self.stdo = stdo
         self.stde = stde
         self.script_name = script_name
@@ -41,14 +43,16 @@ class ScriptBuilder:
         
         assert isinstance(self.system, Planner)
 
+        sandbox = path.join(self.instance_folder, SANDBOX_FOLDER)
+
         planner_src = path.abspath(self.system.get_path())
-        planner_dst = path.join(self.system_dst, "planner")
+        planner_dst = path.join(sandbox, PLANNER_FOLDER)
 
         self.outer_script = [
             '#!/usr/bin/env python3\n',
             f'import os',
             f'import shutil',
-            f'working_dir = "{self.system_dst}"\n',
+            f'sandbox = "{sandbox}"',
             f'stde_path = "{self.stde}"',
             f'stdo_path = "{self.stdo}"',
             f'time_limit = {self.time}\n',
@@ -61,13 +65,13 @@ class ScriptBuilder:
         ]
 
         self.outer_script += [
-            '\nos.makedirs(working_dir, exist_ok=True)',
+            'os.makedirs(sandbox, exist_ok=True)',
             'open(stdo_path, "w")',
             'open(stde_path, "w")',
-            'os.chdir(working_dir)\n',
             '################## SETUP PLANNER SYMLINK ##################',
             'os.symlink(planner_src, planner_dst, target_is_directory=True)',
-            '###########################################################\n',
+            '###########################################################',
+            'os.chdir(sandbox)',
         ]
 
         self.outer_script += [f'#########################################################\n']
@@ -88,7 +92,7 @@ class ScriptBuilder:
         self.inner_script += exe_list
 
         if self.enviorment.delete_systems:
-            self.outer_script.append(f'shutil.rmtree("{self.system_dst}")')
+            self.outer_script.append(f'shutil.rmtree(sandbox)')
         
         inner_script_str = '\n'.join(self.inner_script)
         outer_script_str = '\n'.join(self.outer_script)

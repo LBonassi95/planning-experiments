@@ -26,7 +26,7 @@ class Environment:
         self.delete_systems = True
         self.clean_logs = True
         self.clean_scripts = True
-        self.clean_systems = True
+        # self.clean_systems = True
         self.ppn = 2
         self.priority = 500
         self.qsub = False
@@ -57,8 +57,8 @@ class Environment:
     def set_delete_systems(self, clean: bool):
         self.delete_systems = clean
     
-    def set_clean_systems(self, clean: bool):
-        self.clean_systems = clean
+    # def set_clean_systems(self, clean: bool):
+    #     self.clean_systems = clean
     
     def set_clean_scripts(self, clean: bool):
         self.clean_scripts = clean
