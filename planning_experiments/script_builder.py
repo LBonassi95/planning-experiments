@@ -1,6 +1,10 @@
 from os import path
+import os
+import planning_experiments
 from planning_experiments.data_structures.environment import Environment, Planner, Planner
 from planning_experiments.constants import *
+import inspect
+
 
 class ScriptBuilder:
 
@@ -46,13 +50,23 @@ class ScriptBuilder:
         sandbox = path.join(self.instance_folder, SANDBOX_FOLDER)
 
         planner_src = path.abspath(self.system.get_path())
-        planner_dst = path.join(sandbox, PLANNER_FOLDER)
+        planner_dst = path.join(sandbox)
+
+        if self.enviorment.venv_path:
+            python = os.path.join(self.enviorment.venv_path, 'bin', 'python3')
+        else:
+            python = '/usr/bin/env python3'
 
         self.outer_script = [
-            '#!/usr/bin/env python3\n',
+            f'#!{python}\n',
             f'import os',
             f'import shutil',
+            f'from planning_experiments.save_results import *',
             f'sandbox = "{sandbox}"',
+            f'blob_path = "{self.blob_path}"',
+            f'planner_name = "{self.system.get_name()}"',
+            f'domain_name = "{self.domain_name}"',
+            f'instance_name = "{self.instance_name}"',
             f'stde_path = "{self.stde}"',
             f'stdo_path = "{self.stdo}"',
             f'time_limit = {self.time}\n',
@@ -60,20 +74,28 @@ class ScriptBuilder:
         ]
 
         self.outer_script += [
+            '\n\n'
             f'planner_src = "{planner_src}"',
             f'planner_dst = "{planner_dst}"',
         ]
 
         self.outer_script += [
-            'os.makedirs(sandbox, exist_ok=True)',
             'open(stdo_path, "w")',
             'open(stde_path, "w")',
-            '################## SETUP PLANNER SYMLINK ##################',
-            'os.symlink(planner_src, planner_dst, target_is_directory=True)',
-            '###########################################################',
-            'os.chdir(sandbox)',
         ]
 
+        if self.enviorment.hard_copy:
+            self.outer_script += ['shutil.copytree(planner_src, planner_dst)']
+        
+        else:
+            self.outer_script += [
+            "os.makedirs(planner_dst, exist_ok=True)",
+            "for entry in os.scandir(planner_src):",
+            "    if entry.is_file(follow_symlinks=False):",
+            "        os.symlink(entry.path, os.path.join(planner_dst, entry.name))",
+        ]
+            
+        self.outer_script += ["os.chdir(sandbox)"]
         self.outer_script += [f'#########################################################\n']
 
 
@@ -85,8 +107,9 @@ class ScriptBuilder:
         self.outer_script.append(exec_cmd)
 
         self.inner_script.append('#!/bin/bash')
-        if self.memory != 'None':
-            self.inner_script.append(f'ulimit -Sv {self.memory}')
+
+        # if self.memory != 'None':
+        #     self.inner_script.append(f'ulimit -Sv {self.memory}')
 
         exe_list = self.manage_complex_cmd()
         self.inner_script += exe_list
@@ -94,6 +117,8 @@ class ScriptBuilder:
         if self.enviorment.delete_systems:
             self.outer_script.append(f'shutil.rmtree(sandbox)')
         
+        self.outer_script.append(f'save_results(blob_path, planner_name, domain_name, instance_name)')
+
         inner_script_str = '\n'.join(self.inner_script)
         outer_script_str = '\n'.join(self.outer_script)
         return inner_script_str, outer_script_str

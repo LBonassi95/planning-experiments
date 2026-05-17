@@ -35,7 +35,6 @@ QSUB_TEMPLATE += "#SCRIPT#"
 
 EXPERIMENT_RUN_FOLDER = "RUN_{}"
 
-PLANNERS_FOLDER = 'systems'
 LOG_FOLDER = 'logs'
 BIN_FOLDER = 'bin'
 

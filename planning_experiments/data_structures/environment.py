@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from typing import List, Tuple
 import os
 from planning_experiments.constants import *
 from planning_experiments.data_structures.system import Planner
 from planning_experiments.data_structures.domain import Domain
+import sys
 
 ERROR_SYSTEM_ALREADY_ADDED = '''
 System "{system}" was already added to the environment.
@@ -11,7 +13,6 @@ please create a new environment or assing different names to the system.
 Example: define "{system}-1" and "{system}-2".
 '''
 
-
 class Environment:
 
     SCRIPTS_FOLDER = 'scripts'
@@ -19,6 +20,7 @@ class Environment:
 
     def __init__(self, experiments_root: str, experiment_group: str = "run") -> None:
         self.experiments_root = experiments_root
+        self.hard_copy = False
         self.run_dictionary = {}
         self.experiment_group = experiment_group
         self.memory = DEFAULT_MEM
@@ -26,11 +28,7 @@ class Environment:
         self.delete_systems = True
         self.clean_logs = True
         self.clean_scripts = True
-        # self.clean_systems = True
-        self.ppn = 2
-        self.priority = 500
-        self.qsub = False
-        self.parallel_processes = 8
+        self.venv_path = sys.prefix if sys.prefix != sys.base_prefix else None
 
     def add_run(self, system: Planner, domains: List[Domain], batch_id: str = DEFAULT_BATCH):
 
@@ -38,7 +36,6 @@ class Environment:
             raise Exception(ERROR_SYSTEM_ALREADY_ADDED.format(system=system))
         else:
             self.run_dictionary[system] = {DOMAINS: domains, BATCH: batch_id}
-    
 
     def get_nruns(self):
         nruns = 0
@@ -56,39 +53,9 @@ class Environment:
 
     def set_delete_systems(self, clean: bool):
         self.delete_systems = clean
-    
-    # def set_clean_systems(self, clean: bool):
-    #     self.clean_systems = clean
-    
+
     def set_clean_scripts(self, clean: bool):
         self.clean_scripts = clean
 
     def set_clean_logs(self, clean: bool):
         self.clean_logs = clean
-    
-    def set_ppn(self, ppn: int):
-        self.ppn = ppn
-    
-    def set_priority(self, priority: int):
-        self.priority = priority 
-    
-    def set_qsub(self, qsub: bool):
-        self.qsub = qsub
-
-    def set_parallel_processes(self, parallel_processes: int):
-        self.parallel_processes = parallel_processes
-
-    def get_info(self):
-        data = [
-            ["Environment", self.experiment_group],
-            ["Memory", f'{self.memory} KB'],
-            ["Time", f'{self.time}s'],
-        ]
-        if self.qsub:
-            data.append(["Qsub", "True"])
-            data.append(["PPN", self.ppn])
-            data.append(["Priority", self.priority])
-        else:
-            data.append(["Multiprocessing", "True"])
-            data.append(["Parallel processes", self.parallel_processes])
-        return data
