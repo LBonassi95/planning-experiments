@@ -166,5 +166,9 @@ class Executor:
     
         print("Ready to launch experiments")
         print(f"Total number of runs: {len(job_list)}")
-        
-        self.execution_backend.run(job_list, self.log_folder)
+                
+        self.execution_backend.run(job_list, **{
+            "log_folder": self.log_folder,
+            "run_folder": run_folder,
+            "script_to_blob": script2blob,
+        })
