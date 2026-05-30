@@ -24,7 +24,7 @@ class Executor:
     def __init__(self, execution_backend: ExecutionBackend, 
                        experiments_root: str, 
                        experiment_group: str = "run", 
-                       short_name: str = '',
+                       short_name: str = None,
                        hard_copy: bool = False,
                        delete_old_scripts: bool = False) -> None:
         self.short_name = short_name
@@ -65,7 +65,11 @@ class Executor:
     def run_experiments(self, test_run: bool = False):
 
         self.check_nruns()
-        exp_id = f"{self.short_name}_{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
+        exp_id = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
+       
+        if self.short_name is not None:
+            exp_id = f"{self.short_name}_{exp_id}"
+        
         self.define_paths(exp_id)
 
         if self.clean_scripts:
