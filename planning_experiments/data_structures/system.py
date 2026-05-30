@@ -26,7 +26,7 @@ class Planner:
         self.planner_root = planner_root
         self.launch_script = launch_script
 
-    def get_cmd(self, ctx) -> List[str]:
+    def get_cmd(self, ctx) -> str:
         raise NotImplementedError
     
     def get_name(self) -> str:

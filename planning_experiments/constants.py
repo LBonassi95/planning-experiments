@@ -4,12 +4,6 @@ TIME = "TIME"
 PRIORITY = "PRIORITY"
 PPN = "PPN"
 
-DEFAULT_MEM = 8000000
-DEFAULT_TIME = 1800
-
-DEFAULT_BATCH = ''
-BATCH = 'batch'
-
 NO_VALIDATION_PERFORMED = 'N/A'
 
 PDDL_EXTENSION = ".pddl"
@@ -32,8 +26,6 @@ ERR_QSUB = "#ERR#"
 QSUB_TEMPLATE  = "qsub -o #LOG# -e #ERR# -p #PRIORITY# -q longbatch -l "
 QSUB_TEMPLATE += "nodes=minsky.ing.unibs.it:ppn=#PPN# "
 QSUB_TEMPLATE += "#SCRIPT#"
-
-EXPERIMENT_RUN_FOLDER = "RUN_{}"
 
 LOG_FOLDER = 'logs'
 BIN_FOLDER = 'bin'

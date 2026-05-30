@@ -4,20 +4,24 @@ from typing import List, Tuple
 import subprocess
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
-from os import path
+from pathlib import Path
 
 @dataclass
 class Job:
     name: str
     script_path: str
+    problem_result_folder: str
 
     def __repr__(self):
         return f"Job: {self.name}\nScript path: {self.script_path}"
 
 class ExecutionBackend:
 
-    def run(self, jobs: List[Job], **kwargs):
+    def run(self, jobs: List[Job]):
         raise NotImplementedError
+
+    def create_script(self, cmd: str, sandbox: str, stdout: str, stderr: str):
+        pass
 
     def get_info(self):
         return []
@@ -26,56 +30,93 @@ class ExecutionBackend:
 
 class SlurmBackend:
 
-    def __init__(self, memory = "8GB"):
+    def __init__(self, memory = "8GB", slurm_time = None, timeout = "1800", account = None):
         self.memory = memory
+        self.timeout = timeout
+        self.account = account
+        self.slurm_time = slurm_time
 
-    def run(self, jobs: List[Job], **kwargs):
-        log_folder = kwargs["log_folder"]
-        run_folder = kwargs["run_folder"]
-        script_to_blob = kwargs["script_to_blob"]
-
-        print("Command example")
-        print(f"sbatch --mem={self.memory} --output=LOG.out --error=ERR.err --ntasks=1 --cpus-per-task=1 --threads-per-core=1 SCRIPT_PATH")
-
-        for job in jobs:
-            
-            planner_name = script_to_blob[job.name]["planner"]
-            domain_name = script_to_blob[job.name]["domain"]
-            instance_name = script_to_blob[job.name]["instance"]
-
-            instance_folder = path.join(run_folder, planner_name, domain_name, instance_name)
-
-            cmd = f"sbatch --account=coml0970 --mem={self.memory} --output={instance_folder}/{job.name}.out --error={instance_folder}/{job.name}.err --ntasks=1 --cpus-per-task=1 --threads-per-core=1 {job.script_path}"
+    def run(self, jobs: List[Job]):
+        print(f"Ready to dispatch with slurm! Total number of runs: {len(jobs)}")
+        
+        for job in tqdm(jobs, desc="Submitting jobs"):
+            cmd = f"sbatch {job.script_path}"
             subprocess.check_output(cmd, shell=True)
 
     def get_info(self):
         return [
             ["Slurm", "True"],
+            ["Memory", self.memory],
+            ["Timeout", self.timeout],
+            ["Slurm-time", self.slurm_time]
         ]
+
+
+    def create_script(self, cmd: str, sandbox: str, stdout: str, stderr: str):
+
+        lines = [
+            "#!/bin/bash",
+            "#SBATCH --cpus-per-task=1",
+            f"#SBATCH --threads-per-core=1",
+            f"#SBATCH --output={Path(stdout).parent / "slurm.out"}",
+            f"#SBATCH --error={Path(stdout).parent / "slurm.err"}",
+            f"#SBATCH --mem={self.memory}",
+        ]
+
+        if self.slurm_time is not None:
+            lines += [f"#SBATCH --time={self.slurm_time}"]
+
+        if self.account is not None:
+            lines += [f"#SBATCH --account={self.account}"]
+
+        lines += [f"cd {sandbox}",]
+        
+        exec_cmd = f"{cmd} > {stdout} 2> {stderr}"
+
+        if self.timeout is not None:
+            exec_cmd = f"timeout --signal=HUP {self.timeout} {exec_cmd}" 
+        
+        exec_cmd = f"/usr/bin/time -v {exec_cmd}"
+
+        lines += [exec_cmd]
+
+        return "\n".join(lines)
 
 
 class PythonBackend:
 
-    def __init__(self, parallel_jobs = 8):
+    def __init__(self, parallel_jobs = 8, memory = "unlimited", time = "60"):
         self.parallel_jobs = parallel_jobs
+        self.memory = memory
+        self.time = time
 
-    def run(self, jobs: List[Job], **kwargs):
+    def run(self, jobs: List[Job]):
         progress_bar = tqdm(total=len(jobs), desc="Progress", unit="iteration", colour='green')
         with Pool(self.parallel_jobs) as p:
             for _ in p.imap_unordered(self.run_script, jobs):
                 progress_bar.update(1)
 
             progress_bar.close()
-    
-        # Create summary
-        # summary_path = path.join(run_folder, f"summary_{batch_id}.csv") if batch_id != '' else path.join(run_folder, f"summary.csv")
-        # create_summary(blob_path, summary_path)
 
     def get_info(self):
         return [
             ["Multiprocessing", "True"],
-            ["Parallel processes", self.parallel_jobs]
+            ["Parallel processes", self.parallel_jobs],
+            ["Memory", self.memory],
+            ["Time", self.time]
         ]
+
+    def create_script(self, cmd: str, sandbox: str, stdout: str, stderr: str):
+
+        lines = [
+            "#!/bin/bash",
+            f"ulimit -v {self.memory}",
+        ]
+        lines += [
+            f"cd {sandbox}",
+            f"/usr/bin/time timeout --signal=HUP {self.time} {cmd} > {stdout} 2> {stderr}"
+        ]
+        return "\n".join(lines)
     
     @staticmethod
     def run_script(job: Job):
